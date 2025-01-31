@@ -9,10 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 // Force all routes in this file to return JSON
 Route::group(['middleware' => ['api']], function() {
-    // Test route to verify API is working
-    Route::get('/test', function() {
-        return response()->json(['message' => 'API is working']);
-    });
+   
 
     // Public routes
     Route::post('/send-otp', [AuthController::class, 'sendOtp']);
