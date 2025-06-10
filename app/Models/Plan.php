@@ -12,9 +12,18 @@ class Plan extends Model
     protected $fillable = [
         'name',
         'description',
-        'duration_days',
-        'litres_per_month',
+        'purifier_type', // 'ro' or 'alkaline'
+        'litres',
         'price',
+        'duration_in_days',
+        'is_active'
+    ];
+
+    protected $casts = [
+        'price' => 'decimal:2',
+        'litres' => 'integer',
+        'duration_in_days' => 'integer',
+        'is_active' => 'boolean'
     ];
 
     public function subscriptions()

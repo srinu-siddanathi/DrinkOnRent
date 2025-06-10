@@ -67,4 +67,26 @@ class SubscriptionController extends Controller
             'litres_remaining' => $subscription->litres_remaining,
         ]);
     }
+
+    public function updateConsumption(Request $request, $subscriptionId)
+    {
+        // Validate the request
+        $request->validate([
+            'litres_consumed' => 'required|integer|min:0',
+            'litres_remaining' => 'required|integer|min:0',
+        ]);
+
+        // Find the subscription
+        $subscription = Subscription::findOrFail($subscriptionId);
+
+        // Update the consumption details
+        $subscription->litres_consumed = $request->litres_consumed;
+        $subscription->litres_remaining = $request->litres_remaining;
+        $subscription->save();
+
+        return response()->json([
+            'message' => 'Consumption details updated successfully',
+            'subscription' => $subscription,
+        ]);
+    }
 } 

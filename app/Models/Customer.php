@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Customer extends Authenticatable
 {
@@ -23,13 +24,18 @@ class Customer extends Authenticatable
         'is_phone_verified' => 'boolean',
     ];
 
-    public function subscriptions()
+    public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
     }
 
-    public function activeSubscription()
+    public function supportRequests()
     {
-        return $this->hasOne(Subscription::class)->where('status', 'active')->latest();
+        return $this->hasMany(SupportRequest::class);
+    }
+
+    public function purifiers(): HasMany
+    {
+        return $this->hasMany(Purifier::class);
     }
 } 

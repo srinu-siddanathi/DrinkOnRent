@@ -11,10 +11,12 @@ return new class extends Migration
         Schema::create('plans', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->text('description');
-            $table->integer('duration_days');
-            $table->integer('litres_per_month');
-            $table->decimal('price', 10, 2);
+            $table->text('description')->nullable();
+            $table->enum('purifier_type', ['ro', 'alkaline']);
+            $table->integer('litres');
+            $table->decimal('price', 8, 2);
+            $table->integer('duration_in_days');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
