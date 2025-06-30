@@ -51,7 +51,6 @@ class PurifierController extends Controller
         $validator = Validator::make($request->all(), [
             'plan_id' => 'required|exists:plans,id',
             'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date'
         ]);
 
         if ($validator->fails()) {
@@ -62,12 +61,17 @@ class PurifierController extends Controller
             ->where('customer_id', Auth::user()->id)
             ->firstOrFail();
 
+        $plan = Plan::findOrFail($request->plan_id);
+        $startDate = Carbon::parse($request->start_date)->setTimezone('Asia/Kolkata');
+        $endDate = $startDate->copy()->addDays($plan->duration_in_days);
+
         $subscription = $purifier->customer->subscriptions()->create([
             'plan_id' => $request->plan_id,
             'purifier_id' => $purifierId,
-            'start_date' => Carbon::parse($request->start_date)->setTimezone('Asia/Kolkata'),
-            'end_date' => Carbon::parse($request->end_date)->setTimezone('Asia/Kolkata'),
-            'status' => 'active'
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'status' => 'active',
+            'litres_remaining' => $plan->litres,
         ]);
 
         return response()->json([

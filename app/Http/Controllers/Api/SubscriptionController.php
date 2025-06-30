@@ -20,7 +20,7 @@ class SubscriptionController extends Controller
 
         $subscription = $customer->subscriptions()->create([
             'plan_id' => $plan->id,
-            'litres_remaining' => $plan->litres_per_month,
+            'litres_remaining' => $plan->litres,
             'status' => 'pending',
         ]);
 

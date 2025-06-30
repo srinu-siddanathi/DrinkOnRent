@@ -28,10 +28,12 @@ class CustomerController extends Controller
     {
         $customer = auth()->user();
         $activeSubscription = $customer->activeSubscription()->with('plan')->first();
+        $purifiers = $customer->purifiers()->get();
 
         return response()->json([
             'customer' => $customer,
             'subscription' => $activeSubscription,
+            'purifiers' => $purifiers,
             'days_remaining' => $activeSubscription ? now()->diffInDays($activeSubscription->end_date, false) : 0,
             'litres_remaining' => $activeSubscription ? $activeSubscription->litres_remaining : 0,
         ]);

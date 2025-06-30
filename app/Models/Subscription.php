@@ -29,6 +29,28 @@ class Subscription extends Model
         'litres_remaining' => 'integer',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($subscription) {
+            // If status is active but no start_date is set, set it to now
+            if ($subscription->status === 'active' && !$subscription->start_date) {
+                $subscription->start_date = now();
+            }
+
+            // If status is active but no end_date is set, calculate it from plan
+            if ($subscription->status === 'active' && !$subscription->end_date && $subscription->plan) {
+                $subscription->end_date = $subscription->start_date->addDays($subscription->plan->duration_in_days);
+            }
+
+            // If litres_remaining is not set, get it from the plan
+            if (!$subscription->litres_remaining && $subscription->plan) {
+                $subscription->litres_remaining = $subscription->plan->litres;
+            }
+        });
+    }
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
