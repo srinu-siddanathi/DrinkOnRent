@@ -47,10 +47,7 @@ class AuthController extends Controller
 
         $customer = Customer::firstOrCreate(
             ['phone' => $request->phone],
-            [
-                'name' => 'User_' . substr($request->phone, -4), // Default name using last 4 digits
-                'is_phone_verified' => true
-            ]
+            ['is_phone_verified' => true]
         );
 
         cache()->forget('otp_' . $request->phone);
@@ -59,6 +56,24 @@ class AuthController extends Controller
             'message' => 'OTP verified successfully',
             'token' => $customer->createToken('auth-token')->plainTextToken,
             'customer' => $customer,
+        ]);
+    }
+
+    public function register(Request $request)
+    {
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:customers,email,' . $request->user()->id,
+            'gender' => 'required|string|in:male,female,other',
+        ]);
+
+        $user = $request->user();
+        $user->update($request->only(['first_name', 'last_name', 'email', 'gender']));
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'customer' => $user,
         ]);
     }
 } 
