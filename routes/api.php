@@ -49,7 +49,8 @@ Route::group(['middleware' => ['api']], function() {
         Route::post('/subscriptions', [SubscriptionController::class, 'store']);
         Route::get('/subscriptions/active', [SubscriptionController::class, 'active']);
         Route::post('/subscriptions/{subscription}/activate', [SubscriptionController::class, 'activate']);
-        Route::post('/subscriptions/{subscription}/pay', [PaymentController::class, 'processPayment']);
+        Route::post('/subscriptions/{subscription}/pay', [PaymentController::class, 'createOrder']);
+        Route::post('/payment/verify', [PaymentController::class, 'verifyPayment']);
 
         // Update consumption details
         Route::put('/subscriptions/{subscription}/consumption', [SubscriptionController::class, 'updateConsumption']);
