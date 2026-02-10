@@ -14,12 +14,21 @@ class Customer extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
+        'gender',
         'phone',
         'email',
         'address',
         'is_phone_verified',
     ];
+
+    protected $appends = ['name'];
+
+    public function getNameAttribute(): string
+    {
+        return trim($this->first_name . ' ' . $this->last_name);
+    }
 
     protected $casts = [
         'is_phone_verified' => 'boolean',

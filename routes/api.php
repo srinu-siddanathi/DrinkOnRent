@@ -37,6 +37,9 @@ Route::group(['middleware' => ['api']], function() {
 
     // Protected routes
     Route::middleware('auth:sanctum')->group(function () {
+        // Registration
+        Route::post('/register', [AuthController::class, 'register']);
+
         // Customer profile
         Route::put('/profile', [CustomerController::class, 'updateProfile']);
         Route::get('/dashboard', [CustomerController::class, 'dashboard']);

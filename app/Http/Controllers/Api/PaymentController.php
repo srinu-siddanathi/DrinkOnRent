@@ -24,6 +24,10 @@ class PaymentController extends Controller
     {
         $subscription = Subscription::with(['plan', 'customer'])->findOrFail($subscriptionId);
 
+        if ($subscription->customer_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized access to subscription'], 403);
+        }
+
         if (!$subscription->plan) {
             return response()->json(['message' => 'Subscription plan not found'], 404);
         }

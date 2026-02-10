@@ -38,6 +38,14 @@ Initiates a payment order with Razorpay for a specific subscription. This should
 }
 ```
 
+**Response (Error - 403 Forbidden):**
+
+```json
+{
+    "message": "Unauthorized access to subscription"
+}
+```
+
 **Usage in Android:**
 Use the `order_id` and `key` from this response to launch the Razorpay Checkout form.
 

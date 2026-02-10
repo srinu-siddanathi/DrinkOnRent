@@ -26,7 +26,8 @@ class PaymentTest extends TestCase
     protected function createCustomer()
     {
         return Customer::create([
-            'name' => 'Test User',
+            'first_name' => 'Test',
+            'last_name' => 'User',
             'phone' => '1234567890',
             'email' => 'test@example.com',
             'is_phone_verified' => true,
@@ -134,5 +135,31 @@ class PaymentTest extends TestCase
             'payment_status' => 'completed',
             'status' => 'active',
         ]);
+    }
+
+    public function test_cannot_create_order_for_another_users_subscription()
+    {
+        $owner = $this->createCustomer();
+        $attacker = Customer::create([
+            'first_name' => 'Attacker',
+            'last_name' => 'User',
+            'phone' => '9999999999',
+            'email' => 'attacker@example.com',
+            'is_phone_verified' => true,
+        ]);
+
+        $plan = $this->createPlan();
+
+        $subscription = Subscription::create([
+            'customer_id' => $owner->id,
+            'plan_id' => $plan->id,
+            'status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($attacker, 'sanctum')
+            ->postJson("/api/subscriptions/{$subscription->id}/pay");
+
+        $response->assertStatus(403)
+            ->assertJson(['message' => 'Unauthorized access to subscription']);
     }
 }
