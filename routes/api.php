@@ -63,6 +63,9 @@ Route::group(['middleware' => ['api']], function() {
         Route::get('/support-requests', [SupportRequestController::class, 'index']);
         Route::get('/support-requests/{supportRequest}', [SupportRequestController::class, 'show']);
 
+        // Purifier Requests
+        Route::post('/purifier-requests', [\App\Http\Controllers\Api\PurifierRequestController::class, 'store']);
+
         // Purifier Management Routes
         Route::post('/purifiers', [PurifierController::class, 'create']);
         Route::post('/purifiers/{purifierId}/plan', [PurifierController::class, 'setPlan']);

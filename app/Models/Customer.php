@@ -52,8 +52,24 @@ class Customer extends Authenticatable
         return $this->hasMany(SupportRequest::class);
     }
 
-    public function purifiers(): HasMany
-    {
-        return $this->hasMany(Purifier::class);
+        public function purifiers(): HasMany
+
+        {
+
+            return $this->hasMany(Purifier::class);
+
+        }
+
+    
+
+        public function purifierRequests()
+
+        {
+
+            return $this->hasMany(PurifierRequest::class);
+
+        }
+
     }
-} 
+
+     

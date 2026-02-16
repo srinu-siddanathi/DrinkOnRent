@@ -24,6 +24,10 @@ Route::get('/login', function() {
     return redirect()->route('admin.login');
 })->name('login');
 
+Route::get('/admin', function() {
+    return redirect()->route('admin.login');
+});
+
 // Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
     // Guest routes
@@ -46,6 +50,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Support Requests
         Route::resource('support-requests', SupportController::class);
 
+        // Purifier Requests
+        Route::resource('purifier-requests', \App\Http\Controllers\Admin\PurifierRequestController::class)->only(['index', 'show', 'update']);
+
         // Purifiers
         Route::resource('purifiers', PurifierController::class);
 
@@ -60,6 +67,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 Route::view('/privacy-policy', 'privacy-policy')->name('privacy.policy');
 Route::view('/terms-conditions', 'terms-conditions')->name('terms.conditions');
+Route::view('/refunds-cancellation', 'refunds-cancellation')->name('refunds.cancellation');
 
 Route::post('/contact', function(Request $request) {
     $validated = $request->validate([
