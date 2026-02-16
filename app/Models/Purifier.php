@@ -14,6 +14,7 @@ class Purifier extends Model
     protected $fillable = [
         'customer_id',
         'serial_number',
+        'mac_address',
         'model',
         'type',
         'installation_date',
@@ -47,10 +48,26 @@ class Purifier extends Model
         
         static::creating(function ($purifier) {
             if (empty($purifier->serial_number)) {
-                // Get the last serial number and increment it
-                $lastPurifier = self::orderBy('id', 'desc')->first();
-                $lastNumber = $lastPurifier ? intval(substr($lastPurifier->serial_number, 0)) : 9999;
-                $purifier->serial_number = str_pad($lastNumber + 1, 5, '0', STR_PAD_LEFT);
+                $type = strtolower($purifier->type ?? '');
+                if ($type === 'ro') {
+                    $prefix = 'RO';
+                } elseif ($type === 'alkaline') {
+                    $prefix = 'ALK';
+                } else {
+                    $prefix = strtoupper(substr($type, 0, 2));
+                }
+
+                // Find last serial for this prefix and increment the numeric suffix
+                $last = self::where('serial_number', 'like', $prefix . '%')
+                    ->orderBy('id', 'desc')
+                    ->first();
+
+                $lastNumber = 0;
+                if ($last && preg_match('/(\d+)$/', $last->serial_number, $m)) {
+                    $lastNumber = intval($m[1]);
+                }
+
+                $purifier->serial_number = $prefix . str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
             }
         });
     }

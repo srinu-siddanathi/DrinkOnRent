@@ -21,6 +21,7 @@ class PurifierController extends Controller
         $validator = Validator::make($request->all(), [
             'model' => 'required|string',
             'type' => 'required|string',
+            'mac_address' => 'nullable|string',
             'installation_date' => 'nullable|date',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',

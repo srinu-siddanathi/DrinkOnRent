@@ -25,6 +25,7 @@ class PurifierController extends Controller
     {
         $validated = $request->validate([
             'serial_number' => 'required|unique:purifiers',
+            'mac_address' => 'nullable|string|unique:purifiers,mac_address',
             'model' => 'required',
             'type' => 'required|in:alkaline,ro',
             'status' => 'required|in:available,assigned,maintenance,retired',
@@ -55,6 +56,7 @@ class PurifierController extends Controller
     {
         $validated = $request->validate([
             'serial_number' => 'required|unique:purifiers,serial_number,' . $purifier->id,
+            'mac_address' => 'nullable|string|unique:purifiers,mac_address,' . $purifier->id,
             'model' => 'required',
             'type' => 'required|in:alkaline,ro',
             'status' => 'required|in:available,assigned,maintenance,retired',

@@ -58,6 +58,13 @@
     </main>
     <footer class="bg-white/80 py-8 mt-10 shadow-inner">
         <div class="container mx-auto px-6 text-center text-blue-800">
+            <div class="mb-2">
+                <a href="/privacy-policy" class="text-green-700 underline hover:text-green-900 mx-2">Privacy Policy</a>
+                |
+                <a href="/terms-conditions" class="text-green-700 underline hover:text-green-900 mx-2">Terms & Conditions</a>
+                |
+                <a href="/refunds-cancellation" class="text-green-700 underline hover:text-green-900 mx-2">Refunds & Cancellation</a>
+            </div>
             &copy; {{ date('Y') }} Drink On Rent. All rights reserved.
         </div>
     </footer>

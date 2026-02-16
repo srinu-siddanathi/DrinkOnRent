@@ -287,6 +287,8 @@
                 |
                 <a href="/terms-conditions" class="text-green-700 underline hover:text-green-900 mx-2">Terms &
                     Conditions</a>
+                |
+                <a href="/refunds-cancellation" class="text-green-700 underline hover:text-green-900 mx-2">Refunds & Cancellation</a>
             </div>
             &copy; {{ date('Y') }} Drink On Rent. All rights reserved.
         </div>

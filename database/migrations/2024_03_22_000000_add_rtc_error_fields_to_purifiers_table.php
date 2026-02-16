@@ -9,8 +9,12 @@ return new class extends Migration
     public function up()
     {
         Schema::table('purifiers', function (Blueprint $table) {
-            $table->boolean('has_rtc_error')->default(false)->after('location_address');
-            $table->timestamp('rtc_error_updated_at')->nullable()->after('has_rtc_error');
+            if (!Schema::hasColumn('purifiers', 'has_rtc_error')) {
+                $table->boolean('has_rtc_error')->default(false)->after('location_address');
+            }
+            if (!Schema::hasColumn('purifiers', 'rtc_error_updated_at')) {
+                $table->timestamp('rtc_error_updated_at')->nullable()->after('has_rtc_error');
+            }
         });
     }
 

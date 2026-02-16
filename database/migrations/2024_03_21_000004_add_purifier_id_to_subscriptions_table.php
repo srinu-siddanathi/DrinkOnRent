@@ -9,7 +9,9 @@ return new class extends Migration
     public function up()
     {
         Schema::table('subscriptions', function (Blueprint $table) {
-            $table->foreignId('purifier_id')->nullable()->constrained()->nullOnDelete();
+            if (!Schema::hasColumn('subscriptions', 'purifier_id')) {
+                $table->foreignId('purifier_id')->nullable()->constrained()->nullOnDelete();
+            }
         });
     }
 

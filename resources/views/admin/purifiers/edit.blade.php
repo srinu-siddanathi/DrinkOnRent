@@ -26,6 +26,16 @@
                     </div>
 
                     <div>
+                        <label for="mac_address" class="block text-sm font-medium text-gray-700">MAC Address</label>
+                        <input type="text" name="mac_address" id="mac_address"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                               value="{{ old('mac_address', $purifier->mac_address) }}">
+                        @error('mac_address')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
                         <label for="model" class="block text-sm font-medium text-gray-700">Model</label>
                         <input type="text" name="model" id="model" 
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
