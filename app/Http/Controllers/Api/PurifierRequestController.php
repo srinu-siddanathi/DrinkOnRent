@@ -31,6 +31,16 @@ class PurifierRequestController extends Controller
 
         $customer = Auth::user();
 
+        $existingRequest = $customer->purifierRequests()
+            ->whereNotIn('status', ['completed', 'rejected'])
+            ->exists();
+
+        if ($existingRequest) {
+            return response()->json([
+                'message' => 'You already have an open purifier request.',
+            ], 409);
+        }
+
         $purifierRequest = $customer->purifierRequests()->create($validatedData);
 
         return response()->json([
