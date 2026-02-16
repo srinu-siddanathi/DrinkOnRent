@@ -38,6 +38,26 @@
                     <span class="text-sm text-gray-500">Location Address</span>
                     <span class="text-base text-gray-900">{{ $purifierRequest->location_address }}</span>
                 </div>
+                <div class="flex flex-col space-y-1">
+                    <span class="text-sm text-gray-500">Source of Drinking Water</span>
+                    <span class="text-base text-gray-900">{{ $purifierRequest->source_of_drinking_water ?? '-' }}</span>
+                </div>
+                <div class="flex flex-col space-y-1">
+                    <span class="text-sm text-gray-500">Date of Birth</span>
+                    <span class="text-base text-gray-900">{{ $purifierRequest->date_of_birth ? \Carbon\Carbon::parse($purifierRequest->date_of_birth)->format('d M, Y') : '-' }}</span>
+                </div>
+                <div class="flex flex-col space-y-1">
+                    <span class="text-sm text-gray-500">Type of Residence</span>
+                    <span class="text-base text-gray-900">{{ $purifierRequest->type_of_residence ?? '-' }}</span>
+                </div>
+                <div class="flex flex-col space-y-1">
+                    <span class="text-sm text-gray-500">Share With</span>
+                    <span class="text-base text-gray-900">{{ $purifierRequest->share_with ?? '-' }}</span>
+                </div>
+                <div class="flex flex-col space-y-1">
+                    <span class="text-sm text-gray-500">Current Profession</span>
+                    <span class="text-base text-gray-900">{{ $purifierRequest->current_profession ?? '-' }}</span>
+                </div>
             </div>
         </div>
     </div>
@@ -71,7 +91,7 @@
                             <option value="approved" @if($purifierRequest->status == 'approved') selected @endif>Approved</option>
                             <option value="in_progress" @if($purifierRequest->status == 'in_progress') selected @endif>In Progress</option>
                             <option value="completed" @if($purifierRequest->status == 'completed') selected @endif>Completed</option>
-                            <option value="rejected" @if($purifierRequest->.status == 'rejected') selected @endif>Rejected</option>
+                            <option value="rejected" @if($purifierRequest->status == 'rejected') selected @endif>Rejected</option>
                         </select>
                     </div>
                     <div class="mt-4">

@@ -16,6 +16,11 @@ class PurifierRequest extends Model
         'longitude',
         'location_address',
         'status',
+        'source_of_drinking_water',
+        'date_of_birth',
+        'type_of_residence',
+        'share_with',
+        'current_profession',
     ];
 
     public function customer()

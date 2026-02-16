@@ -296,7 +296,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"purifier_type\": \"ro\",\n    \"latitude\": 12.9716,\n    \"longitude\": 77.5946,\n    \"location_address\": \"123 Main St, Bangalore, India\"\n}",
+                            "raw": "{\n    \"purifier_type\": \"ro\",\n    \"latitude\": 12.9716,\n    \"longitude\": 77.5946,\n    \"location_address\": \"123 Main St, Bangalore, India\",\n    \"source_of_drinking_water\": \"Tap Water\",\n    \"date_of_birth\": \"1990-01-01\",\n    \"type_of_residence\": \"Apartment\",\n    \"share_with\": \"Family\",\n    \"current_profession\": \"Software Engineer\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
