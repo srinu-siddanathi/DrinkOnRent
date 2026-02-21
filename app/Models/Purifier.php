@@ -16,6 +16,7 @@ class Purifier extends Model
         'serial_number',
         'mac_address',
         'model',
+        'purifier_code',
         'type',
         'installation_date',
         'last_service_date',

@@ -5,7 +5,16 @@
 @section('content')
     <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-            <h2 class="text-lg font-medium text-gray-900">Customers</h2>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-medium text-gray-900">Customers</h2>
+                <a href="{{ route('admin.customers.create') }}" 
+                   class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Register New Customer
+                </a>
+            </div>
             
             <div class="mt-4">
                 <table class="min-w-full divide-y divide-gray-200">
@@ -127,7 +136,17 @@
                                 @endforelse
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('admin.customers.show', $customer) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
+                                <div class="flex space-x-3">
+                                    <a href="{{ route('admin.customers.show', $customer) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
+                                    <a href="{{ route('admin.customers.edit', $customer) }}" class="text-blue-600 hover:text-blue-900">Edit</a>
+                                    @if($customer->id_proof)
+                                        <a href="{{ route('admin.customers.download-id-proof', $customer) }}" class="text-green-600 hover:text-green-900" title="Download ID Proof">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                            </svg>
+                                        </a>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                         @endforeach

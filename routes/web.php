@@ -43,6 +43,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Customers
         Route::resource('customers', CustomerController::class);
+        Route::get('customers/{customer}/download-id-proof', [CustomerController::class, 'downloadIdProof'])->name('customers.download-id-proof');
         
         // Orders (Subscriptions)
         Route::resource('orders', OrderController::class);
