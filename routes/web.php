@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\SupportController;
 use App\Http\Controllers\Admin\PurifierController;
 use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\ServiceController;
 use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -63,6 +64,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Payments
         Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
         Route::get('payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
+
+        // Services
+        Route::resource('services', ServiceController::class);
+        Route::get('customers/{customer}/service-history', [ServiceController::class, 'history'])->name('customers.service-history');
     });
 });
 
