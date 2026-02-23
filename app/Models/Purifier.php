@@ -82,4 +82,14 @@ class Purifier extends Model
     {
         return ucfirst($this->type);
     }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function subscription()
+    {
+        return $this->hasOne(Subscription::class)->latestOfMany();
+    }
 } 

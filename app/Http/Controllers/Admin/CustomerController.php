@@ -8,6 +8,7 @@ use App\Models\Purifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Response;
 
 class CustomerController extends Controller
 {
@@ -29,7 +30,7 @@ class CustomerController extends Controller
 
     public function show(Customer $customer)
     {
-        $customer->load(['subscriptions.plan', 'purifiers']);
+        $customer->load(['subscriptions.plan', 'purifiers.subscription.plan']);
         return view('admin.customers.show', compact('customer'));
     }
 
@@ -40,7 +41,7 @@ class CustomerController extends Controller
 
     public function edit(Customer $customer)
     {
-        $customer->load('purifiers');
+        $customer->load(['purifiers.subscription.plan']);
         return view('admin.customers.edit', compact('customer'));
     }
 
@@ -52,6 +53,7 @@ class CustomerController extends Controller
             'email' => ['nullable', 'email', Rule::unique('customers', 'email')->ignore($customer->id)],
             'address' => 'required|string|max:500',
             'area' => 'required|string|max:255',
+            'next_service_reminder' => 'nullable|string|in:3 Months,6 Months,12 Months',
             'id_proof' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'purifier_code' => 'nullable|string|max:255',
             'purifier_type' => 'nullable|string|in:ro,alkaline',
@@ -104,6 +106,7 @@ class CustomerController extends Controller
             'email' => ['nullable', 'email', Rule::unique('customers', 'email')],
             'address' => 'required|string|max:500',
             'area' => 'required|string|max:255',
+            'next_service_reminder' => 'required|string|in:3 Months,6 Months,12 Months',
             'id_proof' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'purifier_code' => 'required|string|max:255',
             'purifier_type' => 'required|string|in:ro,alkaline',
@@ -153,15 +156,87 @@ class CustomerController extends Controller
         return Storage::download($path, $customer->name . '_id_proof.' . pathinfo($customer->id_proof, PATHINFO_EXTENSION));
     }
 
+    public function showIdProof(Customer $customer)
+    {
+        if (!$customer->id_proof) {
+            abort(404);
+        }
+
+        $path = 'id-proofs/' . $customer->id_proof;
+
+        if (!Storage::disk('local')->exists($path)) {
+            abort(404);
+        }
+
+        $file = Storage::disk('local')->get($path);
+        $type = Storage::disk('local')->mimeType($path);
+
+        $response = Response::make($file, 200);
+        $response->header("Content-Type", $type);
+
+        return $response;
+    }
+
+    public function search(Request $request)
+    {
+        $query = $request->get('q', '');
+        
+        if (strlen($query) < 2) {
+            return response()->json(['customers' => []]);
+        }
+
+        $customers = Customer::with([
+            'subscriptions' => function($q) {
+                $q->where('status', 'active')
+                  ->where('end_date', '>', now())
+                  ->orderBy('end_date', 'desc');
+            },
+            'subscriptions.plan',
+            'subscriptions.purifier',
+            'purifiers'
+        ])
+        ->where('first_name', 'like', "%{$query}%")
+        ->orWhere('phone', 'like', "%{$query}%")
+        ->orWhere('area', 'like', "%{$query}%")
+        ->latest()
+        ->limit(10)
+        ->get();
+
+        return response()->json(['customers' => $customers]);
+    }
+
     public function destroy(Customer $customer)
     {
+        $customer->delete();
+        return redirect()->route('admin.customers.index')
+            ->with('success', 'Customer moved to bin successfully');
+    }
+
+    public function bin()
+    {
+        $customers = Customer::onlyTrashed()->latest()->paginate(10);
+        return view('admin.customers.bin', compact('customers'));
+    }
+
+    public function restore($id)
+    {
+        $customer = Customer::onlyTrashed()->findOrFail($id);
+        $customer->restore();
+        return redirect()->route('admin.customers.bin')
+            ->with('success', 'Customer restored successfully');
+    }
+
+    public function forceDelete($id)
+    {
+        $customer = Customer::onlyTrashed()->findOrFail($id);
+        
         // Delete ID Proof if exists
         if ($customer->id_proof && Storage::disk('local')->exists('id-proofs/' . $customer->id_proof)) {
             Storage::disk('local')->delete('id-proofs/' . $customer->id_proof);
         }
 
-        $customer->delete();
-        return redirect()->route('admin.customers.index')
-            ->with('success', 'Customer deleted successfully');
+        $customer->forceDelete();
+        return redirect()->route('admin.customers.bin')
+            ->with('success', 'Customer permanently deleted successfully');
     }
 } 

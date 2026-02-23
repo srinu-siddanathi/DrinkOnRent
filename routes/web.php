@@ -43,8 +43,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('logout', [AdminController::class, 'logout'])->name('logout');
 
         // Customers
+        Route::get('customers/bin', [CustomerController::class, 'bin'])->name('customers.bin');
+        Route::put('customers/{customer}/restore', [CustomerController::class, 'restore'])->name('customers.restore');
+        Route::delete('customers/{customer}/force-delete', [CustomerController::class, 'forceDelete'])->name('customers.force-delete');
         Route::resource('customers', CustomerController::class);
         Route::get('customers/{customer}/download-id-proof', [CustomerController::class, 'downloadIdProof'])->name('customers.download-id-proof');
+        Route::get('customers/{customer}/show-id-proof', [CustomerController::class, 'showIdProof'])->name('customers.show-id-proof');
+        Route::get('customers-search', [CustomerController::class, 'search'])->name('customers.search');
         
         // Orders (Subscriptions)
         Route::resource('orders', OrderController::class);

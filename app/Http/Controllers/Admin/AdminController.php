@@ -36,14 +36,21 @@ class AdminController extends Controller
     {
         $totalCustomers = Customer::count();
         $activeSubscriptions = Subscription::where('status', 'active')->count();
+        $inactiveSubscriptions = Subscription::where('status', '!=', 'active')->count();
         $totalRevenue = Subscription::join('plans', 'subscriptions.plan_id', '=', 'plans.id')
             ->where('subscriptions.payment_status', 'completed')
+            ->sum('plans.price');
+        $todayRevenue = Subscription::join('plans', 'subscriptions.plan_id', '=', 'plans.id')
+            ->where('subscriptions.payment_status', 'completed')
+            ->whereDate('subscriptions.created_at', today())
             ->sum('plans.price');
         
         return view('admin.dashboard', compact(
             'totalCustomers',
             'activeSubscriptions',
-            'totalRevenue'
+            'inactiveSubscriptions',
+            'totalRevenue',
+            'todayRevenue'
         ));
     }
 

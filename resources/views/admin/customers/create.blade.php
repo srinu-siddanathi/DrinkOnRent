@@ -108,6 +108,24 @@
                         @enderror
                     </div>
 
+                    <!-- Next Service Reminder -->
+                    <div>
+                        <label for="next_service_reminder" class="block text-sm font-medium text-gray-700">
+                            Next Service Reminder <span class="text-red-500">*</span>
+                        </label>
+                        <select name="next_service_reminder" id="next_service_reminder" 
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 @error('next_service_reminder') border-red-500 @enderror"
+                                required>
+                            <option value="">Select Reminder Period</option>
+                            <option value="3 Months" {{ old('next_service_reminder') === '3 Months' ? 'selected' : '' }}>3 Months</option>
+                            <option value="6 Months" {{ old('next_service_reminder') === '6 Months' ? 'selected' : '' }}>6 Months</option>
+                            <option value="12 Months" {{ old('next_service_reminder') === '12 Months' ? 'selected' : '' }}>12 Months</option>
+                        </select>
+                        @error('next_service_reminder')
+                            <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- ID Proof Upload -->
                     <div>
                         <label for="id_proof" class="block text-sm font-medium text-gray-700">

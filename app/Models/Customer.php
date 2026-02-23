@@ -8,10 +8,11 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Customer extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'first_name',
@@ -19,6 +20,7 @@ class Customer extends Authenticatable
         'email',
         'address',
         'area',
+        'next_service_reminder',
         'id_proof',
         'is_phone_verified',
     ];

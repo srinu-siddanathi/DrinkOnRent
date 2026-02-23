@@ -32,9 +32,76 @@
                     <span class="text-sm text-gray-500">Address</span>
                     <span class="text-base text-gray-900">{{ $customer->address }}</span>
                 </div>
+                <div class="flex flex-col space-y-1">
+                    <span class="text-sm text-gray-500">Area</span>
+                    <span class="text-base text-gray-900">{{ $customer->area }}</span>
+                </div>
+                <div class="flex flex-col space-y-1">
+                    <span class="text-sm text-gray-500">Next Service Reminder</span>
+                    <span class="text-base text-gray-900">{{ $customer->next_service_reminder }}</span>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- ID Proof Card -->
+    @if($customer->id_proof)
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg font-medium text-gray-900">ID Proof</h3>
+            <div class="mt-4">
+                <!-- Thumbnail -->
+                <img id="idProofThumbnail" src="{{ route('admin.customers.show-id-proof', $customer) }}" alt="ID Proof Thumbnail" class="h-24 w-24 object-cover rounded-lg cursor-pointer hover:opacity-75 transition">
+
+                <!-- Modal -->
+                <div id="idProofModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75" style="display: none;">
+                    <div class="max-w-3xl max-h-full p-4 relative">
+                        <span id="closeModal" class="absolute top-0 right-0 mt-4 mr-4 text-white text-3xl cursor-pointer hover:text-gray-300">&times;</span>
+                        <img src="{{ route('admin.customers.show-id-proof', $customer) }}" alt="ID Proof" class="max-w-full max-h-[90vh] rounded-lg">
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <a href="{{ route('admin.customers.download-id-proof', $customer) }}" class="text-indigo-600 hover:text-indigo-900">Download ID Proof</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const thumbnail = document.getElementById('idProofThumbnail');
+            const modal = document.getElementById('idProofModal');
+            const closeModal = document.getElementById('closeModal');
+
+            if (thumbnail && modal && closeModal) {
+                thumbnail.addEventListener('click', function () {
+                    modal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden'; // Prevent scrolling
+                });
+
+                function hideModal() {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = ''; // Restore scrolling
+                }
+
+                closeModal.addEventListener('click', hideModal);
+
+                modal.addEventListener('click', function (e) {
+                    if (e.target === modal) {
+                        hideModal();
+                    }
+                });
+
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape' && modal.style.display === 'flex') {
+                        hideModal();
+                    }
+                });
+            }
+        });
+    </script>
+    @endif
 
     <!-- Purifiers and Subscriptions Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
