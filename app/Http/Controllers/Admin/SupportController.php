@@ -8,11 +8,25 @@ use Illuminate\Http\Request;
 
 class SupportController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $requests = SupportRequest::with('customer')
-            ->latest()
-            ->paginate(10);
+        $query = SupportRequest::with('customer')->latest();
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->whereHas('customer', function ($q) use ($searchTerm) {
+                $q->where('first_name', 'like', "%{$searchTerm}%")
+                  ->orWhere('last_name', 'like', "%{$searchTerm}%")
+                  ->orWhere('email', 'like', "%{$searchTerm}%")
+                  ->orWhere('phone', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        $requests = $query->paginate(10);
             
         return view('admin.support.index', compact('requests'));
     }

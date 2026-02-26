@@ -74,7 +74,7 @@
                     <div>
                         <label for="customer_id" class="block text-sm font-medium text-gray-700">Customer</label>
                         <select name="customer_id" id="customer_id" 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" disabled>
                             <option value="">Select Customer</option>
                             @foreach($customers as $customer)
                                 <option value="{{ $customer->id }}" {{ old('customer_id', $purifier->customer_id) == $customer->id ? 'selected' : '' }}>

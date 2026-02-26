@@ -39,8 +39,6 @@ class ServiceController extends Controller
             'service_date' => 'required|date',
             'next_service_reminder' => 'required|integer|in:3,6,12',
             'spare_parts' => 'nullable|array',
-            'total_amount' => 'required|numeric',
-            'payment_mode' => 'required|string',
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -51,15 +49,16 @@ class ServiceController extends Controller
         if ($request->hasFile('images')) {
             $imagePaths = [];
             foreach ($request->file('images') as $image) {
-                $path = $image->store('service-images', 'public');
-                $imagePaths[] = $path;
+                $imageName = time() . '_' . $image->getClientOriginalName();
+                $image->move(public_path('uploads/service-images'), $imageName);
+                $imagePaths[] = $imageName;
             }
             $serviceData['images'] = $imagePaths;
         }
 
         // Calculate Expiry Date
         $serviceDate = Carbon::parse($validated['service_date']);
-        $serviceData['expiry_date'] = $serviceDate->copy()->addMonths($validated['next_service_reminder']);
+        $serviceData['expiry_date'] = $serviceDate->copy()->addMonths((int)$validated['next_service_reminder']);
 
         Service::create($serviceData);
 

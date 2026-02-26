@@ -36,15 +36,7 @@
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="litres" class="block text-sm font-medium text-gray-700">Litres</label>
-                        <input type="number" name="litres" id="litres" 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                               value="{{ old('litres') }}" required min="1">
-                        @error('litres')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    <input type="hidden" name="litres" value="0">
 
                     <div>
                         <label for="price" class="block text-sm font-medium text-gray-700">Price (₹)</label>

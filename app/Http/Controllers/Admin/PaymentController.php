@@ -20,6 +20,12 @@ class PaymentController extends Controller
     public function show(Subscription $payment)
     {
         $payment->load(['customer', 'plan', 'purifier']);
-        return view('admin.payments.show', compact('payment'));
+
+        $paymentHistory = Subscription::with(['plan'])
+            ->where('customer_id', $payment->customer_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.payments.show', compact('payment', 'paymentHistory'));
     }
 } 

@@ -16,8 +16,6 @@ class Service extends Model
         'next_service_reminder',
         'expiry_date',
         'spare_parts',
-        'total_amount',
-        'payment_mode',
         'images',
     ];
 

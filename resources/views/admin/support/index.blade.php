@@ -6,6 +6,27 @@
     <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
             <h2 class="text-lg font-medium text-gray-900">Support Requests</h2>
+
+            <div class="mt-4">
+                <form action="{{ route('admin.support-requests.index') }}" method="GET">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-1/2">
+                            <input type="text" name="search" class="w-full px-4 py-2 border rounded-md" placeholder="Search by name, email, or mobile..." value="{{ request('search') }}">
+                        </div>
+                        <div>
+                            <select name="status" class="w-full px-4 py-2 border rounded-md">
+                                <option value="">All Statuses</option>
+                                <option value="open" {{ request('status') === 'open' ? 'selected' : '' }}>Open</option>
+                                <option value="in_progress" {{ request('status') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                                <option value="resolved" {{ request('status') === 'resolved' ? 'selected' : '' }}>Resolved</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md">Filter</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
             
             <div class="mt-4">
                 <table class="min-w-full divide-y divide-gray-200">
@@ -23,7 +44,7 @@
                         @foreach($requests as $request)
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#{{ $request->id }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->customer->name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ optional($request->customer)->name ?? 'N/A' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->subject }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 

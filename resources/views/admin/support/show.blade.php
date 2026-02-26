@@ -13,7 +13,7 @@
             <div class="mt-4 grid grid-cols-2 gap-4">
                 <div>
                     <h3 class="text-sm font-medium text-gray-500">Customer</h3>
-                    <p class="mt-1 text-sm text-gray-900">{{ $supportRequest->customer->name }}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ optional($supportRequest->customer)->name ?? 'N/A' }}</p>
                 </div>
                 <div>
                     <h3 class="text-sm font-medium text-gray-500">Created At</h3>

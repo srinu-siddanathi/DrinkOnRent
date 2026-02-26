@@ -16,6 +16,8 @@ class Customer extends Authenticatable
 
     protected $fillable = [
         'first_name',
+        'last_name',
+        'gender',
         'phone',
         'email',
         'address',
@@ -29,7 +31,7 @@ class Customer extends Authenticatable
 
     public function getNameAttribute(): string
     {
-        return $this->first_name ?? '';
+        return trim($this->first_name . ' ' . $this->last_name);
     }
 
     protected $casts = [

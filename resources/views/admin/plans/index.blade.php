@@ -22,7 +22,7 @@
                                 <div class="flex justify-between items-start">
                                     <div>
                                         <h4 class="text-lg font-medium text-gray-900">{{ $plan->name }}</h4>
-                                        <p class="text-sm text-gray-500">{{ $plan->litres }} Litres</p>
+                                        
                                         @if($plan->description)
                                             <p class="mt-1 text-sm text-gray-500">{{ $plan->description }}</p>
                                         @endif
@@ -66,7 +66,7 @@
                                 <div class="flex justify-between items-start">
                                     <div>
                                         <h4 class="text-lg font-medium text-gray-900">{{ $plan->name }}</h4>
-                                        <p class="text-sm text-gray-500">{{ $plan->litres }} Litres</p>
+                                        
                                         @if($plan->description)
                                             <p class="mt-1 text-sm text-gray-500">{{ $plan->description }}</p>
                                         @endif

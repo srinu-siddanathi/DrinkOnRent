@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\PurifierController;
 use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ServiceController;
+use App\Http\Controllers\Admin\ComplaintController;
 use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -73,6 +74,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Services
         Route::resource('services', ServiceController::class);
         Route::get('customers/{customer}/service-history', [ServiceController::class, 'history'])->name('customers.service-history');
+
+        // Complaints
+        Route::resource('complaints', ComplaintController::class);
     });
 });
 
