@@ -41,6 +41,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Protected routes
     Route::middleware('auth:admin')->group(function () {
         Route::get('dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('dashboard/revenue', [AdminController::class, 'revenue'])->name('dashboard.revenue');
         Route::post('logout', [AdminController::class, 'logout'])->name('logout');
 
         // Customers

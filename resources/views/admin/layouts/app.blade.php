@@ -122,9 +122,9 @@
         <div id="sidebar" class="w-64 bg-blue-900 transform transition-transform duration-300 -translate-x-full md:translate-x-0 fixed md:relative left-0 top-0 h-screen md:h-auto z-40">
             <div class="flex flex-col h-screen">
                 <!-- Logo -->
-                <div class="logo-section flex items-center justify-between px-6 h-16 bg-blue-800">
+                <div class="logo-section flex items-center justify-between px-6 h-16 bg-white">
                     <img src="/uploads/logo.png" alt="Drink On Rent Logo" style="height:48px; width:auto;">
-                    <button id="toggleSidebar" class="text-white hover:text-gray-200 transition-colors">
+                    <button id="toggleSidebar" class="text-blue-900 hover:text-blue-700 transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
@@ -337,5 +337,7 @@
             }
         });
     </script>
+
+    @stack('scripts')
 </body>
 </html>

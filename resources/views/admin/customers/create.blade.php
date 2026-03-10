@@ -3,7 +3,7 @@
 @section('title', 'Register Customer')
 
 @section('content')
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div>
         <!-- Customer Form Section -->
         <div class="bg-white shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
@@ -36,7 +36,11 @@
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 @error('phone') border-red-500 @enderror"
                                value="{{ old('phone') }}"
                                placeholder="10-digit phone number"
+                               inputmode="numeric"
+                               maxlength="10"
+                               minlength="10"
                                pattern="[0-9]{10}"
+                               oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)"
                                required>
                         @error('phone')
                             <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
@@ -187,48 +191,6 @@
                         @enderror
                     </div>
                 </form>
-            </div>
-        </div>
-
-        <!-- Purifier Information Section -->
-        <div class="bg-white shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-6">Summary</h3>
-
-                <div class="space-y-6">
-                    <!-- Info Box -->
-                    <div class="p-4 bg-blue-50 border border-blue-200 rounded-md">
-                        <div class="flex">
-                            <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                            </svg>
-                            <div class="ml-3">
-                                <p class="text-sm text-blue-700 font-medium">Registration Flow</p>
-                                <ul class="text-sm text-blue-600 mt-2 space-y-1">
-                                    <li>✓ Enter customer details on the left</li>
-                                    <li>✓ Upload ID proof document</li>
-                                    <li>✓ Enter purifier details below</li>
-                                    <li>✓ Click "Register" to create both</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Info Box 2 -->
-                    <div class="p-4 bg-green-50 border border-green-200 rounded-md">
-                        <div class="flex">
-                            <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <div class="ml-3">
-                                <p class="text-sm text-green-700 font-medium">What Happens Next</p>
-                                <p class="text-sm text-green-600 mt-1">
-                                    The purifier will be automatically assigned a unique serial number based on its type.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>

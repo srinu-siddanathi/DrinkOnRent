@@ -5,13 +5,19 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Purifier;
 use App\Models\Customer;
+use App\Models\Payment;
+use App\Models\Subscription;
 use Illuminate\Http\Request;
 
 class PurifierController extends Controller
 {
     public function index()
     {
-        $purifiers = Purifier::with('customer')->paginate(10);
+        $purifiers = Purifier::with([
+            'customer',
+            'subscriptions.plan',
+            'customer.subscriptions.plan'
+        ])->paginate(10);
         return view('admin.purifiers.index', compact('purifiers'));
     }
 
@@ -43,7 +49,40 @@ class PurifierController extends Controller
 
     public function show(Purifier $purifier)
     {
-        return view('admin.purifiers.show', compact('purifier'));
+        $purifier->load(['customer', 'subscriptions.plan', 'customer.subscriptions.plan']);
+
+        $subscriptionIds = Subscription::where('purifier_id', $purifier->id)->pluck('id');
+
+        if ($subscriptionIds->isEmpty() && $purifier->customer_id) {
+            $subscriptionIds = Subscription::where('customer_id', $purifier->customer_id)->pluck('id');
+        }
+
+        $payments = Payment::with(['subscription.plan'])
+            ->whereIn('subscription_id', $subscriptionIds)
+            ->latest()
+            ->get();
+
+        $fallbackPayments = collect();
+
+        if ($payments->isEmpty()) {
+            $fallbackPayments = Subscription::with('plan')
+                ->whereIn('id', $subscriptionIds)
+                ->whereNotNull('payment_status')
+                ->orderByDesc('created_at')
+                ->get()
+                ->map(function ($subscription) {
+                    return (object) [
+                        'created_at' => $subscription->created_at,
+                        'plan_name' => $subscription->plan->name ?? '-',
+                        'amount' => $subscription->plan->price ?? 0,
+                        'status' => $subscription->payment_status,
+                        'razorpay_order_id' => '-',
+                        'razorpay_payment_id' => '-',
+                    ];
+                });
+        }
+
+        return view('admin.purifiers.show', compact('purifier', 'payments', 'fallbackPayments'));
     }
 
     public function edit(Purifier $purifier)

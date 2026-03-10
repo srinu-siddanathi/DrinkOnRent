@@ -8,13 +8,24 @@ use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Subscription::with(['customer', 'plan'])
-            ->latest()
-            ->paginate(10);
+        $status = $request->query('status');
+
+        $query = Subscription::with(['customer', 'plan']);
+
+        if ($status === 'active') {
+            $query->where('status', 'active');
+        } elseif ($status === 'inactive') {
+            $query->where('status', '!=', 'active');
+        }
+
+        $orders = $query->latest()->paginate(10)->withQueryString();
             
-        return view('admin.orders.index', compact('orders'));
+        return view('admin.orders.index', [
+            'orders' => $orders,
+            'statusFilter' => $status,
+        ]);
     }
 
     public function show(Subscription $order)

@@ -41,13 +41,12 @@
                             <th class="px-3 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
                             <th class="px-3 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Purifiers</th>
                             <th class="px-3 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active Plan</th>
-                            <th class="px-3 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subscription Status</th>
                             <th class="px-3 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200" id="customerTableBody">
                         @forelse($customers as $customer)
-                        <tr>
+                        <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ route('admin.customers.show', $customer) }}'">
                             <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $customer->first_name }}</td>
                             <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $customer->phone }}</td>
                             <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $customer->area }}</td>
@@ -75,6 +74,7 @@
                                                             </svg>
                                                             <a href="https://www.google.com/maps?q={{ $purifier->latitude }},{{ $purifier->longitude }}" 
                                                                target="_blank"
+                                                               onclick="event.stopPropagation();"
                                                                class="text-indigo-600 hover:text-indigo-900">
                                                                 View Location
                                                             </a>
@@ -115,44 +115,7 @@
                                     <span class="text-gray-500">No active plan</span>
                                 @endif
                             </td>
-                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
-                                @php
-                                    $activeSubscriptions = $customer->subscriptions
-                                        ->where('status', 'active')
-                                        ->where('end_date', '>', now());
-                                @endphp
-                                
-                                @forelse($activeSubscriptions as $subscription)
-                                    <div class="mb-2 last:mb-0">
-                                        <div class="text-sm text-gray-900">
-                                            {{ $subscription->plan->name }}
-                                            @if($subscription->purifier)
-                                                <span class="text-xs text-gray-500">({{ $subscription->purifier->serial_number }})</span>
-                                            @endif
-                                        </div>
-                                        <div class="text-xs text-gray-500">
-                                            @php
-                                                $daysLeft = ceil(now()->floatDiffInDays($subscription->end_date));
-                                                $totalDays = $subscription->start_date->floatDiffInDays($subscription->end_date);
-                                                $percentage = max(0, min(100, ($daysLeft / $totalDays) * 100));
-                                            @endphp
-                                            <div class="flex items-center">
-                                                <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                                    <div class="h-full {{ $percentage > 20 ? 'bg-indigo-600' : 'bg-red-500' }} rounded-full" 
-                                                         style="width: {{ $percentage }}%">
-                                                    </div>
-                                                </div>
-                                                <span class="ml-2 {{ $daysLeft < 5 ? 'text-red-500 font-medium' : '' }}">
-                                                    {{ $daysLeft }} {{ Str::plural('day', $daysLeft) }} left
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @empty
-                                    <span class="text-gray-500 text-sm">No active subscriptions</span>
-                                @endforelse
-                            </td>
-                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium" onclick="event.stopPropagation();">
                                 <div class="flex space-x-3">
                                     <a href="{{ route('admin.customers.show', $customer) }}" class="text-indigo-600 hover:text-indigo-900" title="View">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
@@ -179,7 +142,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                            <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
                                 No customers found.
                             </td>
                         </tr>
@@ -224,7 +187,7 @@
                         const customers = data.customers;
                         
                         if (customers.length === 0) {
-                            customerTableBody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">No customers found.</td></tr>';
+                            customerTableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No customers found.</td></tr>';
                         } else {
                             customerTableBody.innerHTML = customers.map(customer => renderCustomerRow(customer)).join('');
                         }
@@ -236,7 +199,7 @@
 
         function renderCustomerRow(customer) {
             const activeSubscriptions = customer.subscriptions.filter(s => s.status === 'active' && new Date(s.end_date) > new Date());
-            const subscriptionHTML = activeSubscriptions.length > 0 
+            const activePlanHTML = activeSubscriptions.length > 0 
                 ? activeSubscriptions.map(s => `<div class="flex items-center"><span class="w-2 h-2 mr-2 rounded-full ${s.plan.purifier_type === 'ro' ? 'bg-purple-400' : 'bg-blue-400'}"></span><span>${s.plan.name}</span></div>`).join('')
                 : '<span class="text-gray-500">No active plan</span>';
 
@@ -245,23 +208,17 @@
                 : '<span class="text-gray-500">-</span>';
 
             return `
-                <tr>
+                <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='/admin/customers/${customer.id}'">
                     <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">${customer.first_name}</td>
                     <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">${customer.phone}</td>
                     <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">${customer.area || ''}</td>
                     <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm">
-                        <div class="flex flex-col space-y-1">${subscriptionHTML}</div>
-                    </td>
-                    <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <div class="flex flex-col space-y-2">${purifiersHTML}</div>
                     </td>
-                    <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
-                        ${activeSubscriptions.length > 0 
-                            ? activeSubscriptions.map(s => `<div class="mb-2 last:mb-0"><div class="text-sm text-gray-900">${s.plan.name}</div></div>`).join('')
-                            : '<span class="text-gray-500 text-sm">No active subscriptions</span>'
-                        }
+                    <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm">
+                        <div class="flex flex-col space-y-1">${activePlanHTML}</div>
                     </td>
-                    <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium" onclick="event.stopPropagation();">
                         <div class="flex space-x-3">
                             <a href="/admin/customers/${customer.id}" class="text-indigo-600 hover:text-indigo-900" title="View">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>

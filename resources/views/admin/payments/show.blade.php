@@ -26,6 +26,10 @@
                     <dt class="text-sm font-medium text-gray-500">Payment Date</dt>
                     <dd class="mt-1 text-gray-900">{{ $payment->created_at->format('M d, Y h:i A') }}</dd>
                 </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Transaction ID</dt>
+                    <dd class="mt-1 text-gray-900">{{ $payment->paymentRecord->razorpay_payment_id ?? '-' }}</dd>
+                </div>
             </div>
         </div>
     </div>
@@ -71,14 +75,6 @@
                 <div>
                     <dt class="text-sm font-medium text-gray-500">Duration</dt>
                     <dd class="mt-1 text-gray-900">{{ $payment->plan->duration_in_days }} days</dd>
-                </div>
-                <div>
-                    <dt class="text-sm font-medium text-gray-500">Litres</dt>
-                    <dd class="mt-1 text-gray-900">{{ $payment->plan->litres }} L</dd>
-                </div>
-                <div>
-                    <dt class="text-sm font-medium text-gray-500">Consumption</dt>
-                    <dd class="mt-1 text-gray-900">{{ $payment->consumption ?? 0 }} L</dd>
                 </div>
             </div>
         </div>
@@ -137,6 +133,9 @@
                                                 Status
                                             </th>
                                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Transaction ID
+                                            </th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Date
                                             </th>
                                         </tr>
@@ -157,13 +156,16 @@
                                                         {{ ucfirst($historyPayment->payment_status) }}
                                                     </span>
                                                 </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {{ $historyPayment->paymentRecord->razorpay_payment_id ?? '-' }}
+                                                </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                     {{ $historyPayment->created_at->format('M d, Y h:i A') }}
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                                <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                                     No payment history found.
                                                 </td>
                                             </tr>

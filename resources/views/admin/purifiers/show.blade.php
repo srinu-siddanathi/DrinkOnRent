@@ -21,6 +21,17 @@
 
             <div class="border-t border-gray-200 px-4 py-5">
                 <div class="grid grid-cols-2 gap-4">
+                    @php
+                        $subscriptionCollection = $purifier->subscriptions->isNotEmpty()
+                            ? $purifier->subscriptions
+                            : collect(optional($purifier->customer)->subscriptions ?? []);
+
+                        $displaySubscription = $subscriptionCollection
+                            ->where('status', 'active')
+                            ->sortByDesc('created_at')
+                            ->first() ?? $subscriptionCollection->sortByDesc('created_at')->first();
+                    @endphp
+
                     <div>
                         <h3 class="text-sm font-medium text-gray-500">Serial Number</h3>
                         <p class="mt-1 text-sm text-gray-900">{{ $purifier->serial_number }}</p>
@@ -50,6 +61,7 @@
                                 <a href="{{ route('admin.customers.show', $purifier->customer) }}" class="text-indigo-600 hover:text-indigo-900">
                                     {{ $purifier->customer->name }}
                                 </a>
+                                <span class="block text-xs text-gray-500 mt-1">{{ $purifier->customer->phone }}</span>
                             @else
                                 Not Assigned
                             @endif
@@ -91,6 +103,106 @@
                         <h3 class="text-sm font-medium text-gray-500">Created At</h3>
                         <p class="mt-1 text-sm text-gray-900">{{ $purifier->created_at->format('Y-m-d H:i') }}</p>
                     </div>
+
+                    <div class="col-span-2">
+                        <h3 class="text-sm font-medium text-gray-500">Subscription Status</h3>
+                        @if($displaySubscription)
+                            @php
+                                $daysLeftRaw = $displaySubscription->end_date
+                                    ? now()->diffInDays($displaySubscription->end_date, false)
+                                    : 0;
+                                $daysLeft = (int) max(0, ceil($daysLeftRaw));
+                                $totalDays = ($displaySubscription->start_date && $displaySubscription->end_date)
+                                    ? $displaySubscription->start_date->diffInDays($displaySubscription->end_date)
+                                    : 0;
+                                $percentage = $totalDays > 0
+                                    ? max(0, min(100, ($daysLeftRaw / $totalDays) * 100))
+                                    : 0;
+                            @endphp
+                            <div class="mt-1 flex items-center gap-3">
+                                <span class="text-sm text-gray-900">{{ $displaySubscription->plan->name ?? 'Plan' }}</span>
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    {{ $displaySubscription->status === 'active' ? 'bg-green-100 text-green-800' : 
+                                       ($displaySubscription->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}">
+                                    {{ ucfirst($displaySubscription->status) }}
+                                </span>
+                            </div>
+                            @if($displaySubscription->end_date)
+                                <div class="mt-2 max-w-md">
+                                    <div class="flex items-center">
+                                        <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div class="h-full {{ $percentage > 20 ? 'bg-indigo-600' : 'bg-red-500' }} rounded-full" style="width: {{ $percentage }}%"></div>
+                                        </div>
+                                        <span class="ml-2 text-xs {{ $daysLeft < 5 ? 'text-red-500 font-medium' : 'text-gray-600' }}">
+                                            {{ $daysLeft }} {{ Str::plural('day', $daysLeft) }} left
+                                        </span>
+                                    </div>
+                                </div>
+                            @endif
+                        @else
+                            <p class="mt-1 text-sm text-gray-500">No subscription linked.</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-200 px-4 py-5">
+                <h3 class="text-base font-medium text-gray-900 mb-4">Payment History</h3>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
+                                <th class="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th class="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                                <th class="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment ID</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @if($payments->isNotEmpty())
+                                @foreach($payments as $payment)
+                                <tr>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ $payment->created_at->format('Y-m-d H:i') }}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ $payment->subscription->plan->name ?? '-' }}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">₹{{ number_format($payment->amount, 2) }}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            {{ $payment->status === 'completed' ? 'bg-green-100 text-green-800' : 
+                                               ($payment->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                                            {{ ucfirst($payment->status) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ $payment->razorpay_order_id ?? '-' }}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ $payment->razorpay_payment_id ?? '-' }}</td>
+                                </tr>
+                                @endforeach
+                            @elseif(isset($fallbackPayments) && $fallbackPayments->isNotEmpty())
+                                @foreach($fallbackPayments as $payment)
+                                <tr>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ $payment->created_at->format('Y-m-d H:i') }}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ $payment->plan_name }}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">₹{{ number_format($payment->amount, 2) }}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            {{ $payment->status === 'completed' ? 'bg-green-100 text-green-800' : 
+                                               ($payment->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                                            {{ ucfirst($payment->status) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">-</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">-</td>
+                                </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td colspan="6" class="px-4 py-3 text-sm text-gray-500 text-center">No payment history available for this purifier.</td>
+                                </tr>
+                            @endif
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

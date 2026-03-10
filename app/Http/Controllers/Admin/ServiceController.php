@@ -65,14 +65,31 @@ class ServiceController extends Controller
         return redirect()->back()->with('success', 'Service added successfully');
     }
 
-    public function history(Customer $customer)
+    public function history(Request $request, Customer $customer)
     {
-        $services = $customer->services()->latest('service_date')->get();
-        // We will return JSON with HTML, assuming the partial exists or we construct it here.
-        // For simplicity, let's return the data and let JS build it, OR return a partial.
-        // Let's return the partial.
+        $validated = $request->validate([
+            'year' => 'nullable|digits:4',
+        ]);
+
+        $servicesQuery = $customer->services()->with('customer')->latest('service_date');
+
+        if (!empty($validated['year'])) {
+            $servicesQuery->whereYear('service_date', (int) $validated['year']);
+        }
+
+        $services = $servicesQuery->get();
+
+        $availableYears = $customer->services()
+            ->selectRaw('YEAR(service_date) as year')
+            ->distinct()
+            ->orderByDesc('year')
+            ->pluck('year')
+            ->filter();
+
+        $selectedYear = $validated['year'] ?? '';
+
         return response()->json([
-            'html' => view('admin.services.partials.history', compact('services'))->render()
+            'html' => view('admin.services.partials.history', compact('services', 'availableYears', 'selectedYear'))->render()
         ]);
     }
 }

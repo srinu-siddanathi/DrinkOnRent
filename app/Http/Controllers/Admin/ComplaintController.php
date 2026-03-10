@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
 use App\Models\Complaint;
 use Illuminate\Http\Request;
 
@@ -16,13 +15,15 @@ class ComplaintController extends Controller
     {
         $query = Complaint::with('customer');
 
-        if ($request->has('search')) {
-            $search = $request->input('search');
+        if ($request->filled('search')) {
+            $search = trim($request->input('search'));
             $query->where(function ($q) use ($search) {
-                $q->where('subject', 'like', "%{$search}%")
-                    ->orWhereHas('customer', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                    });
+                $q->where('details', 'like', "%{$search}%")
+                  ->orWhereHas('customer', function ($q) use ($search) {
+                      $q->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -36,8 +37,7 @@ class ComplaintController extends Controller
      */
     public function create()
     {
-        $customers = Customer::all();
-        return view('admin.complaints.create', compact('customers'));
+        return view('admin.complaints.create');
     }
 
     /**
@@ -47,11 +47,15 @@ class ComplaintController extends Controller
     {
         $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'subject' => 'required|string|max:255',
             'details' => 'required|string',
         ]);
 
-        Complaint::create($request->all());
+        Complaint::create([
+            'customer_id' => $request->customer_id,
+            'subject' => 'Complaint',
+            'details' => $request->details,
+            'status' => 'pending',
+        ]);
 
         return redirect()->route('admin.complaints.index')->with('success', 'Complaint created successfully.');
     }
