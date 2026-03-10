@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\Service;
 use App\Models\Subscription;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -38,6 +39,14 @@ class AdminController extends Controller
         $totalCustomers = Customer::count();
         $activeSubscriptions = Subscription::where('status', 'active')->count();
         $inactiveSubscriptions = Subscription::where('status', '!=', 'active')->count();
+        $latestServicesQuery = $this->latestServicesPerCustomerQuery();
+        $servicesSoonCount = (clone $latestServicesQuery)
+            ->whereDate('services.expiry_date', '>=', today())
+            ->whereDate('services.expiry_date', '<=', today()->copy()->addDays(7))
+            ->count();
+        $servicesDelayCount = (clone $latestServicesQuery)
+            ->whereDate('services.expiry_date', '<', today())
+            ->count();
         $totalRevenue = $this->calculateRevenue(now()->subDays(30), now());
         $todayRevenue = Subscription::join('plans', 'subscriptions.plan_id', '=', 'plans.id')
             ->where('subscriptions.payment_status', 'completed')
@@ -48,9 +57,40 @@ class AdminController extends Controller
             'totalCustomers',
             'activeSubscriptions',
             'inactiveSubscriptions',
+            'servicesSoonCount',
+            'servicesDelayCount',
             'totalRevenue',
             'todayRevenue'
         ));
+    }
+
+    public function servicesSoon()
+    {
+        $services = $this->latestServicesPerCustomerQuery()
+            ->whereDate('services.expiry_date', '>=', today())
+            ->whereDate('services.expiry_date', '<=', today()->copy()->addDays(7))
+            ->paginate(15);
+
+        return view('admin.dashboard.service-list', [
+            'title' => 'Service Soon',
+            'subtitle' => 'Customers with services expiring within 7 days',
+            'services' => $services,
+            'mode' => 'soon',
+        ]);
+    }
+
+    public function servicesDelay()
+    {
+        $services = $this->latestServicesPerCustomerQuery()
+            ->whereDate('services.expiry_date', '<', today())
+            ->paginate(15);
+
+        return view('admin.dashboard.service-list', [
+            'title' => 'Service Delay',
+            'subtitle' => 'Customers with expired service dates',
+            'services' => $services,
+            'mode' => 'delay',
+        ]);
     }
 
     public function revenue(Request $request)
@@ -103,6 +143,23 @@ class AdminController extends Controller
                 $endDate->copy()->endOfDay(),
             ])
             ->sum('plans.price');
+    }
+
+    private function latestServicesPerCustomerQuery()
+    {
+        $latestServiceSubQuery = Service::query()
+            ->select('customer_id')
+            ->selectRaw('MAX(service_date) as latest_service_date')
+            ->groupBy('customer_id');
+
+        return Service::query()
+            ->select('services.*')
+            ->joinSub($latestServiceSubQuery, 'latest_services', function ($join) {
+                $join->on('services.customer_id', '=', 'latest_services.customer_id')
+                    ->on('services.service_date', '=', 'latest_services.latest_service_date');
+            })
+            ->with('customer')
+            ->orderBy('services.expiry_date');
     }
 
     public function logout(Request $request)

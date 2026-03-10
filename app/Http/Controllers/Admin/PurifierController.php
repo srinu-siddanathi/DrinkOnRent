@@ -110,4 +110,34 @@ class PurifierController extends Controller
         return redirect()->route('admin.purifiers.index')
             ->with('success', 'Purifier updated successfully');
     }
+
+    public function search(Request $request)
+    {
+        $query = Purifier::with([
+            'customer',
+            'subscriptions.plan',
+            'customer.subscriptions.plan'
+        ]);
+
+        if ($request->filled('q')) {
+            $search = trim($request->q);
+            $query->where(function ($q) use ($search) {
+                $q->where('serial_number', 'like', "%{$search}%")
+                  ->orWhere('model', 'like', "%{$search}%")
+                  ->orWhere('type', 'like', "%{$search}%")
+                  ->orWhere('status', 'like', "%{$search}%")
+                  ->orWhereHas('customer', function ($customerQuery) use ($search) {
+                      $customerQuery->where('first_name', 'like', "%{$search}%")
+                          ->orWhere('last_name', 'like', "%{$search}%")
+                          ->orWhere('phone', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $purifiers = $query->latest()->limit(100)->get();
+
+        return response()->json([
+            'purifiers' => $purifiers,
+        ]);
+    }
 } 

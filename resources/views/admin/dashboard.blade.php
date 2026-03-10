@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="-m-2 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 items-start" style="row-gap: 1.25rem; column-gap: 1.25rem;">
-        <a href="{{ route('admin.customers.index') }}" class="m-2 block bg-blue-100 overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow min-h-[130px]">
+        <a href="{{ route('admin.customers.index') }}" class="m-2 block bg-indigo-100 overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow min-h-[130px]">
             <div class="px-4 py-5 sm:p-6 flex items-center justify-between">
                 <div>
                     <dt class="text-sm font-medium text-gray-600 truncate">
@@ -14,7 +14,7 @@
                         {{ $totalCustomers }}
                     </dd>
                 </div>
-                <svg class="w-12 h-12 text-blue-400 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-12 h-12 text-indigo-400 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                 </svg>
             </div>
@@ -36,17 +36,17 @@
             </div>
         </a>
 
-        <a href="{{ route('admin.orders.index', ['status' => 'inactive']) }}" class="m-2 block bg-red-100 overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow min-h-[130px]">
+        <a href="{{ route('admin.orders.index', ['status' => 'inactive']) }}" class="m-2 block bg-rose-100 overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow min-h-[130px]">
             <div class="px-4 py-5 sm:p-6 flex items-center justify-between">
                 <div>
                     <dt class="text-sm font-medium text-gray-600 truncate">
                         Inactive Subscriptions
                     </dt>
-                    <dd class="mt-2 text-3xl font-bold text-red-600">
+                    <dd class="mt-2 text-3xl font-bold text-rose-700">
                         {{ $inactiveSubscriptions }}
                     </dd>
                 </div>
-                <svg class="w-12 h-12 text-red-400 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-12 h-12 text-rose-400 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
             </div>
@@ -64,6 +64,38 @@
                 </div>
                 <svg class="w-12 h-12 text-yellow-400 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+        </a>
+
+        <a href="{{ route('admin.dashboard.services-soon') }}" class="m-2 block bg-blue-100 overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow min-h-[130px]">
+            <div class="px-4 py-5 sm:p-6 flex items-center justify-between">
+                <div>
+                    <dt class="text-sm font-medium text-gray-600 truncate">
+                        Services Soon
+                    </dt>
+                    <dd class="mt-2 text-3xl font-bold text-blue-700">
+                        {{ $servicesSoonCount }}
+                    </dd>
+                </div>
+                <svg class="w-12 h-12 text-blue-400 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+        </a>
+
+        <a href="{{ route('admin.dashboard.services-delay') }}" class="m-2 block bg-red-100 overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow min-h-[130px]">
+            <div class="px-4 py-5 sm:p-6 flex items-center justify-between">
+                <div>
+                    <dt class="text-sm font-medium text-gray-600 truncate">
+                        Services Delay
+                    </dt>
+                    <dd class="mt-2 text-3xl font-bold text-red-700">
+                        {{ $servicesDelayCount }}
+                    </dd>
+                </div>
+                <svg class="w-12 h-12 text-red-400 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"/>
                 </svg>
             </div>
         </a>

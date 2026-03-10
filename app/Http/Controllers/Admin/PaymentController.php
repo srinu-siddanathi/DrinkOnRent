@@ -15,6 +15,7 @@ class PaymentController extends Controller
             'range' => 'nullable|in:today,7d,30d,3m,custom',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
+            'search' => 'nullable|string',
         ]);
 
         $query = Subscription::with(['customer', 'plan', 'paymentRecord'])->orderBy('created_at', 'desc');
@@ -47,6 +48,8 @@ class PaymentController extends Controller
             }
         }
 
+        $this->applySearchFilter($query, $validated['search'] ?? null);
+
         $payments = $query->paginate(10)->withQueryString();
 
         return view('admin.payments.index', [
@@ -67,5 +70,77 @@ class PaymentController extends Controller
             ->get();
 
         return view('admin.payments.show', compact('payment', 'paymentHistory'));
+    }
+
+    public function search(Request $request)
+    {
+        $validated = $request->validate([
+            'q' => 'nullable|string',
+            'range' => 'nullable|in:today,7d,30d,3m,custom',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
+
+        $query = Subscription::with(['customer', 'plan', 'paymentRecord'])->orderBy('created_at', 'desc');
+
+        $range = $validated['range'] ?? null;
+        if ($range) {
+            $startDate = null;
+            $endDate = now();
+
+            if ($range === 'today') {
+                $startDate = now()->startOfDay();
+                $endDate = now()->endOfDay();
+            } elseif ($range === '7d') {
+                $startDate = now()->subDays(7)->startOfDay();
+            } elseif ($range === '3m') {
+                $startDate = now()->subMonths(3)->startOfDay();
+            } elseif ($range === 'custom') {
+                if (!empty($validated['start_date']) && !empty($validated['end_date'])) {
+                    $startDate = Carbon::parse($validated['start_date'])->startOfDay();
+                    $endDate = Carbon::parse($validated['end_date'])->endOfDay();
+                }
+            } else {
+                $range = '30d';
+                $startDate = now()->subDays(30)->startOfDay();
+            }
+
+            if ($startDate) {
+                $query->where('payment_status', 'completed')
+                    ->whereBetween('created_at', [$startDate, $endDate]);
+            }
+        }
+
+        $this->applySearchFilter($query, $validated['q'] ?? null);
+
+        $payments = $query->limit(100)->get();
+
+        return response()->json([
+            'payments' => $payments,
+        ]);
+    }
+
+    private function applySearchFilter($query, ?string $search): void
+    {
+        if (!$search) {
+            return;
+        }
+
+        $term = trim($search);
+
+        if ($term === '') {
+            return;
+        }
+
+        $query->where(function ($q) use ($term) {
+            $q->whereHas('customer', function ($customerQuery) use ($term) {
+                $customerQuery->where('first_name', 'like', "%{$term}%")
+                    ->orWhere('last_name', 'like', "%{$term}%")
+                    ->orWhere('phone', 'like', "%{$term}%");
+            })->orWhereHas('paymentRecord', function ($paymentQuery) use ($term) {
+                $paymentQuery->where('razorpay_payment_id', 'like', "%{$term}%")
+                    ->orWhere('razorpay_order_id', 'like', "%{$term}%");
+            });
+        });
     }
 } 

@@ -42,6 +42,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('auth:admin')->group(function () {
         Route::get('dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('dashboard/revenue', [AdminController::class, 'revenue'])->name('dashboard.revenue');
+        Route::get('dashboard/services-soon', [AdminController::class, 'servicesSoon'])->name('dashboard.services-soon');
+        Route::get('dashboard/services-delay', [AdminController::class, 'servicesDelay'])->name('dashboard.services-delay');
         Route::post('logout', [AdminController::class, 'logout'])->name('logout');
 
         // Customers
@@ -58,26 +60,31 @@ Route::prefix('admin')->name('admin.')->group(function () {
         
         // Support Requests
         Route::resource('support-requests', SupportController::class);
+        Route::get('support-requests-search', [SupportController::class, 'search'])->name('support-requests.search');
 
         // Purifier Requests
         Route::resource('purifier-requests', \App\Http\Controllers\Admin\PurifierRequestController::class)->only(['index', 'show', 'update']);
 
         // Purifiers
         Route::resource('purifiers', PurifierController::class);
+        Route::get('purifiers-search', [PurifierController::class, 'search'])->name('purifiers.search');
 
         // Plans
         Route::resource('plans', PlanController::class);
 
         // Payments
         Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
+        Route::get('payments-search', [PaymentController::class, 'search'])->name('payments.search');
         Route::get('payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
 
         // Services
         Route::resource('services', ServiceController::class);
+        Route::get('services-search', [ServiceController::class, 'search'])->name('services.search');
         Route::get('customers/{customer}/service-history', [ServiceController::class, 'history'])->name('customers.service-history');
 
         // Complaints
         Route::resource('complaints', ComplaintController::class);
+        Route::get('complaints-search', [ComplaintController::class, 'search'])->name('complaints.search');
     });
 });
 

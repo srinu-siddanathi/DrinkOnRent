@@ -36,6 +36,7 @@ class ServiceController extends Controller
     {
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
+            'support_request_id' => 'nullable|exists:support_requests,id',
             'service_date' => 'required|date',
             'next_service_reminder' => 'required|integer|in:3,6,12',
             'spare_parts' => 'nullable|array',
@@ -90,6 +91,30 @@ class ServiceController extends Controller
 
         return response()->json([
             'html' => view('admin.services.partials.history', compact('services', 'availableYears', 'selectedYear'))->render()
+        ]);
+    }
+
+    public function search(Request $request)
+    {
+        $query = Customer::with(['latestService', 'purifiers']);
+
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('area')) {
+            $query->where('area', $request->area);
+        }
+
+        $customers = $query->latest()->limit(100)->get();
+
+        return response()->json([
+            'customers' => $customers,
         ]);
     }
 }

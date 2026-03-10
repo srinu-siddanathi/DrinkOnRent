@@ -12,6 +12,7 @@ class Service extends Model
 
     protected $fillable = [
         'customer_id',
+        'support_request_id',
         'service_date',
         'next_service_reminder',
         'expiry_date',
@@ -29,5 +30,10 @@ class Service extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function supportRequest(): BelongsTo
+    {
+        return $this->belongsTo(SupportRequest::class);
     }
 }

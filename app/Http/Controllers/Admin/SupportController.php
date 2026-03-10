@@ -33,7 +33,9 @@ class SupportController extends Controller
 
     public function show(SupportRequest $supportRequest)
     {
-        $supportRequest->load('customer');
+        $supportRequest->load(['customer', 'services' => function ($query) {
+            $query->latest('service_date');
+        }]);
         return view('admin.support.show', compact('supportRequest'));
     }
 
@@ -48,5 +50,30 @@ class SupportController extends Controller
 
         return redirect()->route('admin.support-requests.show', $supportRequest)
             ->with('success', 'Support request updated successfully');
+    }
+
+    public function search(Request $request)
+    {
+        $query = SupportRequest::with('customer')->latest();
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('search')) {
+            $searchTerm = trim($request->search);
+            $query->whereHas('customer', function ($q) use ($searchTerm) {
+                $q->where('first_name', 'like', "%{$searchTerm}%")
+                  ->orWhere('last_name', 'like', "%{$searchTerm}%")
+                  ->orWhere('email', 'like', "%{$searchTerm}%")
+                  ->orWhere('phone', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        $requests = $query->limit(100)->get();
+
+        return response()->json([
+            'requests' => $requests,
+        ]);
     }
 } 

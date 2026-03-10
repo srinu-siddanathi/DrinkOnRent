@@ -7,8 +7,9 @@
         <div class="px-4 py-5 sm:p-6">
             <h2 class="text-lg font-medium text-gray-900">Purifier Requests</h2>
             
-            <div class="mt-4">
-                <table class="min-w-full divide-y divide-gray-200">
+            <div class="mt-4 overflow-x-auto -mx-4 sm:mx-0">
+                <div class="inline-block min-w-full">
+                <table class="w-full divide-y divide-gray-200">
                     <thead>
                         <tr>
                             <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
@@ -52,6 +53,7 @@
                         @endforelse
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>

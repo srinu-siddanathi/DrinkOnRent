@@ -21,4 +21,9 @@ class SupportRequest extends Model
     {
         return $this->belongsTo(Customer::class);
     }
+
+    public function services()
+    {
+        return $this->hasMany(Service::class);
+    }
 } 

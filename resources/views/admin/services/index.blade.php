@@ -9,26 +9,32 @@
             <h2 class="text-lg font-medium text-gray-900">Services</h2>
         </div>
 
-        <div class="mb-6">
-            <form action="{{ route('admin.services.index') }}" method="GET" class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-                <input type="text" name="search" placeholder="Search by name or phone" value="{{ request('search') }}"
-                       class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm w-full md:w-auto">
+        <div class="mb-4 flex flex-col md:flex-row gap-4">
+            <div class="relative w-full md:w-[70%]">
+                <input 
+                    type="text" 
+                    id="serviceSearchInput" 
+                    placeholder="Search by name, phone, or area..." 
+                    value="{{ request('search') }}"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+                <svg class="absolute right-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </div>
 
-                <select name="area" onchange="this.form.submit()"
-                        class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm w-full md:w-auto">
-                    <option value="">All Areas</option>
-                    @foreach($areas as $area)
-                        <option value="{{ $area }}" {{ request('area') == $area ? 'selected' : '' }}>{{ $area }}</option>
-                    @endforeach
-                </select>
-                <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                    Search
-                </button>
-            </form>
+            <select id="serviceAreaFilter"
+                    class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm w-full md:w-[30%]">
+                <option value="">All Areas</option>
+                @foreach($areas as $area)
+                    <option value="{{ $area }}" {{ request('area') == $area ? 'selected' : '' }}>{{ $area }}</option>
+                @endforeach
+            </select>
         </div>
 
-        <div class="mt-4 overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+        <div class="mt-0 overflow-x-auto -mx-4 sm:mx-0">
+            <div class="inline-block min-w-full">
+            <table class="w-full divide-y divide-gray-200">
                 <thead>
                     <tr>
                         <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
@@ -41,7 +47,7 @@
                         <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="bg-white divide-y divide-gray-200" id="servicesTableBody">
                     @foreach($customers as $customer)
                     <tr class="cursor-pointer hover:bg-gray-50" onclick="openHistoryModal({{ $customer->id }}, '{{ addslashes($customer->name) }}')">
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -72,9 +78,10 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
 
-        <div class="mt-4">
+        <div class="mt-4" id="servicesPagination">
             {{ $customers->appends(request()->query())->links() }}
         </div>
     </div>
@@ -190,12 +197,136 @@
     const historyModal = document.getElementById('historyModal');
     const addServiceModal = document.getElementById('addServiceModal');
     const serviceCustomerId = document.getElementById('serviceCustomerId');
+    const serviceSearchInput = document.getElementById('serviceSearchInput');
+    const serviceAreaFilter = document.getElementById('serviceAreaFilter');
+    const servicesTableBody = document.getElementById('servicesTableBody');
+    const servicesPagination = document.getElementById('servicesPagination');
 
     let currentHistoryCustomerId = null;
     let currentHistoryCustomerName = '';
     let currentHistoryYear = '';
+    let serviceSearchTimeout;
+    let serviceWasFiltering = false;
     const serviceImageModal = document.getElementById('serviceImageModal');
     const serviceImageModalImg = document.getElementById('serviceImageModalImg');
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function escapeForSingleQuote(value) {
+        return String(value ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) {
+            return '-';
+        }
+
+        const date = new Date(dateString);
+        if (Number.isNaN(date.getTime())) {
+            return '-';
+        }
+
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+
+        return `${day}-${month}-${year}`;
+    }
+
+    function renderServiceRow(customer) {
+        const safeName = escapeHtml(customer.name || 'N/A');
+        const safePhone = escapeHtml(customer.phone || '-');
+        const safeArea = escapeHtml(customer.area || '-');
+        const latestService = customer.latest_service;
+        const serviceReminder = latestService ? `${latestService.next_service_reminder}M` : '-';
+        const lastServiceDate = latestService ? formatDate(latestService.service_date) : 'No service';
+        const nextServiceDate = latestService ? formatDate(latestService.expiry_date) : '-';
+        const purifierType = customer.purifiers && customer.purifiers.length
+            ? `${(customer.purifiers[0].type || '-').charAt(0).toUpperCase()}${(customer.purifiers[0].type || '-').slice(1)}`
+            : '-';
+        const escapedNameForJs = escapeForSingleQuote(customer.name || 'N/A');
+
+        return `
+            <tr class="cursor-pointer hover:bg-gray-50" onclick="openHistoryModal(${customer.id}, '${escapedNameForJs}')">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span class="text-indigo-600 font-bold">${safeName}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${safePhone}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${safeArea}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${escapeHtml(serviceReminder)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${escapeHtml(purifierType)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${escapeHtml(lastServiceDate)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">${escapeHtml(nextServiceDate)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <a href="#" onclick="event.stopPropagation(); openHistoryModal(${customer.id}, '${escapedNameForJs}'); return false;" class="text-indigo-600 hover:text-indigo-900">History</a>
+                </td>
+            </tr>
+        `;
+    }
+
+    async function runServicesFilter() {
+        if (!serviceSearchInput || !serviceAreaFilter || !servicesTableBody || !servicesPagination) {
+            return;
+        }
+
+        const query = serviceSearchInput.value.trim();
+        const area = serviceAreaFilter.value;
+
+        if (query.length < 2 && !area) {
+            if (serviceWasFiltering) {
+                window.location.reload();
+            }
+            return;
+        }
+
+        serviceWasFiltering = true;
+
+        const params = new URLSearchParams();
+        if (query.length >= 2) {
+            params.set('search', query);
+        }
+        if (area) {
+            params.set('area', area);
+        }
+
+        try {
+            const response = await fetch(`{{ route('admin.services.search') }}?${params.toString()}`, {
+                headers: { 'Accept': 'application/json' },
+                credentials: 'same-origin'
+            });
+
+            const data = await response.json();
+            const customers = data.customers || [];
+
+            if (!customers.length) {
+                servicesTableBody.innerHTML = '<tr><td colspan="8" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">No customers found.</td></tr>';
+            } else {
+                servicesTableBody.innerHTML = customers.map(renderServiceRow).join('');
+            }
+
+            servicesPagination.style.display = 'none';
+        } catch (error) {
+            console.error('Error filtering services:', error);
+        }
+    }
+
+    if (serviceSearchInput) {
+        serviceSearchInput.addEventListener('input', function () {
+            clearTimeout(serviceSearchTimeout);
+            serviceSearchTimeout = setTimeout(runServicesFilter, 300);
+        });
+    }
+
+    if (serviceAreaFilter) {
+        serviceAreaFilter.addEventListener('change', runServicesFilter);
+    }
 
     function openServiceImageModal(imageUrl) {
         serviceImageModalImg.src = imageUrl;

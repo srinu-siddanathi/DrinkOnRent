@@ -8,6 +8,18 @@ use Illuminate\Http\Request;
 
 class ComplaintController extends Controller
 {
+    private function applySearch($query, string $search)
+    {
+        $query->where(function ($q) use ($search) {
+            $q->where('details', 'like', "%{$search}%")
+              ->orWhereHas('customer', function ($q) use ($search) {
+                  $q->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+              });
+        });
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -17,19 +29,28 @@ class ComplaintController extends Controller
 
         if ($request->filled('search')) {
             $search = trim($request->input('search'));
-            $query->where(function ($q) use ($search) {
-                $q->where('details', 'like', "%{$search}%")
-                  ->orWhereHas('customer', function ($q) use ($search) {
-                      $q->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%")
-                        ->orWhere('phone', 'like', "%{$search}%");
-                  });
-            });
+            $this->applySearch($query, $search);
         }
 
         $complaints = $query->latest()->paginate(10);
 
         return view('admin.complaints.index', compact('complaints'));
+    }
+
+    public function search(Request $request)
+    {
+        $query = Complaint::with('customer')->latest();
+
+        if ($request->filled('search')) {
+            $search = trim($request->input('search'));
+            $this->applySearch($query, $search);
+        }
+
+        $complaints = $query->limit(100)->get();
+
+        return response()->json([
+            'complaints' => $complaints,
+        ]);
     }
 
     /**
