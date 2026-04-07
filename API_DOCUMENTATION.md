@@ -516,6 +516,56 @@ Status Code: 400
 
 **Note:** Currently, this endpoint simulates payment processing. Integration with actual payment gateway (e.g., Stripe, Razorpay) is required for production.
 
+#### 12.1 Get Payment History
+Get complete payment history for the authenticated customer.
+
+**Endpoint:** `GET /api/payments/history`
+
+**Authentication:** Required
+
+**Response (Success):**
+```json
+{
+  "message": "Payment history fetched successfully",
+  "payments": [
+    {
+      "id": 2,
+      "razorpay_order_id": "order_Q1w2e3",
+      "razorpay_payment_id": "pay_R4t5y6",
+      "amount": 100,
+      "currency": "INR",
+      "status": "completed",
+      "created_at": "2026-04-07T21:54:00.000000Z",
+      "subscription": {
+        "id": 12,
+        "status": "active",
+        "start_date": "2026-04-01T00:00:00.000000Z",
+        "end_date": "2026-05-01T00:00:00.000000Z"
+      },
+      "plan": {
+        "id": 3,
+        "name": "Premium Plan",
+        "price": 100,
+        "duration_in_days": 30
+      }
+    }
+  ]
+}
+```
+
+**Response (Empty History):**
+```json
+{
+  "message": "Payment history is empty",
+  "payments": []
+}
+```
+
+**Notes:**
+- Includes all payment statuses (`pending`, `completed`, `failed`).
+- Returns only records for the authenticated customer.
+- No pagination or filters in this version.
+
 ---
 
 ### Support Requests

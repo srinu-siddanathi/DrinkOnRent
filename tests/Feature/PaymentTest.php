@@ -162,4 +162,101 @@ class PaymentTest extends TestCase
         $response->assertStatus(403)
             ->assertJson(['message' => 'Unauthorized access to subscription']);
     }
+
+    public function test_customer_can_get_payment_history_with_subscription_and_plan_summary()
+    {
+        $customer = $this->createCustomer();
+        $otherCustomer = Customer::create([
+            'first_name' => 'Other',
+            'last_name' => 'Customer',
+            'phone' => '8888888888',
+            'email' => 'other@example.com',
+            'is_phone_verified' => true,
+        ]);
+
+        $plan = $this->createPlan();
+        $otherPlan = Plan::create([
+            'name' => 'Other Plan',
+            'description' => 'Other Description',
+            'purifier_type' => 'alkaline',
+            'litres' => 80,
+            'price' => 80.00,
+            'duration_in_days' => 15,
+            'is_active' => true,
+        ]);
+
+        $subscription = Subscription::create([
+            'customer_id' => $customer->id,
+            'plan_id' => $plan->id,
+            'status' => 'active',
+            'start_date' => now()->subDays(5),
+            'end_date' => now()->addDays(25),
+        ]);
+
+        $otherSubscription = Subscription::create([
+            'customer_id' => $otherCustomer->id,
+            'plan_id' => $otherPlan->id,
+            'status' => 'pending',
+        ]);
+
+        $firstPayment = Payment::create([
+            'subscription_id' => $subscription->id,
+            'razorpay_order_id' => 'order_hist_1',
+            'razorpay_payment_id' => 'pay_hist_1',
+            'amount' => 100.00,
+            'currency' => 'INR',
+            'status' => 'completed',
+        ]);
+
+        $secondPayment = Payment::create([
+            'subscription_id' => $subscription->id,
+            'razorpay_order_id' => 'order_hist_2',
+            'amount' => 100.00,
+            'currency' => 'INR',
+            'status' => 'pending',
+        ]);
+
+        Payment::create([
+            'subscription_id' => $otherSubscription->id,
+            'razorpay_order_id' => 'order_hist_other',
+            'amount' => 80.00,
+            'currency' => 'INR',
+            'status' => 'failed',
+        ]);
+
+        $response = $this->actingAs($customer, 'sanctum')
+            ->getJson('/api/payments/history');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('message', 'Payment history fetched successfully')
+            ->assertJsonCount(2, 'payments')
+            ->assertJsonPath('payments.0.subscription.id', $subscription->id)
+            ->assertJsonPath('payments.0.plan.id', $plan->id)
+            ->assertJsonPath('payments.1.subscription.id', $subscription->id)
+            ->assertJsonPath('payments.1.plan.name', $plan->name);
+
+        $paymentIds = collect($response->json('payments'))->pluck('id')->all();
+        $this->assertContains($firstPayment->id, $paymentIds);
+        $this->assertContains($secondPayment->id, $paymentIds);
+        $this->assertCount(2, $paymentIds);
+    }
+
+    public function test_payment_history_returns_empty_list_for_customer_without_payments()
+    {
+        $customer = $this->createCustomer();
+
+        $response = $this->actingAs($customer, 'sanctum')
+            ->getJson('/api/payments/history');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('message', 'Payment history is empty')
+            ->assertJsonPath('payments', []);
+    }
+
+    public function test_unauthenticated_user_cannot_access_payment_history()
+    {
+        $response = $this->getJson('/api/payments/history');
+
+        $response->assertStatus(401);
+    }
 }

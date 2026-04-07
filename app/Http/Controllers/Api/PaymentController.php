@@ -136,4 +136,46 @@ class PaymentController extends Controller
             'subscription' => $subscription
         ]);
     }
+
+    public function history(Request $request)
+    {
+        $payments = Payment::with(['subscription.plan'])
+            ->whereHas('subscription', function ($query) use ($request) {
+                $query->where('customer_id', $request->user()->id);
+            })
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json([
+            'message' => $payments->isEmpty()
+                ? 'Payment history is empty'
+                : 'Payment history fetched successfully',
+            'payments' => $payments->map(function (Payment $payment) {
+                $subscription = $payment->subscription;
+                $plan = $subscription?->plan;
+
+                return [
+                    'id' => $payment->id,
+                    'razorpay_order_id' => $payment->razorpay_order_id,
+                    'razorpay_payment_id' => $payment->razorpay_payment_id,
+                    'amount' => (float) $payment->amount,
+                    'currency' => $payment->currency,
+                    'status' => $payment->status,
+                    'created_at' => optional($payment->created_at)->toISOString(),
+                    'subscription' => $subscription ? [
+                        'id' => $subscription->id,
+                        'status' => $subscription->status,
+                        'start_date' => optional($subscription->start_date)->toISOString(),
+                        'end_date' => optional($subscription->end_date)->toISOString(),
+                    ] : null,
+                    'plan' => $plan ? [
+                        'id' => $plan->id,
+                        'name' => $plan->name,
+                        'price' => (float) $plan->price,
+                        'duration_in_days' => $plan->duration_in_days,
+                    ] : null,
+                ];
+            })->values(),
+        ]);
+    }
 }
