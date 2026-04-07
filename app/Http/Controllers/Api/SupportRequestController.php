@@ -47,8 +47,37 @@ class SupportRequestController extends Controller
             ], 403);
         }
 
+        $supportRequest->load([
+            'services' => function ($query) {
+                $query->latest('service_date');
+            },
+        ]);
+
+        $services = $supportRequest->services->map(function ($service) {
+            return [
+                'id' => $service->id,
+                'service_date' => $service->service_date?->format('d-m-Y') ?? '-',
+                'next_service_reminder' => "{$service->next_service_reminder} Months",
+                'expiry_date' => $service->expiry_date?->format('d-m-Y') ?? '-',
+                'spare_parts' => $service->spare_parts ?? [],
+                'images' => collect($service->images ?? [])->map(function ($image) {
+                    return asset('uploads/service-images/' . $image);
+                })->values(),
+            ];
+        })->values();
+
         return response()->json([
-            'support_request' => $supportRequest,
+            'support_request' => [
+                'id' => $supportRequest->id,
+                'customer_id' => $supportRequest->customer_id,
+                'subject' => $supportRequest->subject,
+                'message' => $supportRequest->message,
+                'status' => $supportRequest->status,
+                'admin_notes' => $supportRequest->admin_notes,
+                'created_at' => optional($supportRequest->created_at)->toISOString(),
+                'updated_at' => optional($supportRequest->updated_at)->toISOString(),
+                'services' => $services,
+            ],
         ]);
     }
 } 
