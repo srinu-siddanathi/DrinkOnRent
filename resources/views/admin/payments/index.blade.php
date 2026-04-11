@@ -56,7 +56,7 @@
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200" id="paymentsTableBody">
                                     @forelse($payments as $payment)
-                                        <tr>
+                                        <tr class="js-payment-row cursor-pointer hover:bg-gray-50" data-href="{{ route('admin.payments.show', $payment) }}" tabindex="0" role="link" aria-label="View payment {{ $payment->id }} details">
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm font-medium text-gray-900">
                                                     {{ $payment->customer->name }}
@@ -158,7 +158,7 @@
         const amount = plan.price ? Number(plan.price).toFixed(2) : '0.00';
 
         return `
-            <tr>
+            <tr class="js-payment-row cursor-pointer hover:bg-gray-50" data-href="/admin/payments/${payment.id}" tabindex="0" role="link" aria-label="View payment ${escapeHtml(payment.id)} details">
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">${escapeHtml(customer.name || 'N/A')}</div>
                     <div class="text-sm text-gray-500">${escapeHtml(customer.email || '-')}</div>
@@ -227,6 +227,32 @@
     paymentSearchInput.addEventListener('input', function () {
         clearTimeout(paymentSearchTimeout);
         paymentSearchTimeout = setTimeout(runPaymentSearch, 300);
+    });
+
+    paymentsTableBody.addEventListener('click', function (event) {
+        const interactiveElement = event.target.closest('a, button, input, select, textarea, label');
+        if (interactiveElement) return;
+
+        const row = event.target.closest('.js-payment-row');
+        if (!row || !paymentsTableBody.contains(row)) return;
+
+        const href = row.dataset.href;
+        if (href) {
+            window.location.href = href;
+        }
+    });
+
+    paymentsTableBody.addEventListener('keydown', function (event) {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+
+        const row = event.target.closest('.js-payment-row');
+        if (!row || !paymentsTableBody.contains(row)) return;
+
+        event.preventDefault();
+        const href = row.dataset.href;
+        if (href) {
+            window.location.href = href;
+        }
     });
 </script>
 @endsection 

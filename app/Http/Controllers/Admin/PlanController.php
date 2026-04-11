@@ -25,13 +25,12 @@ class PlanController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'purifier_type' => 'required|in:ro,alkaline',
-            'litres' => 'required|integer|min:1',
             'price' => 'required|numeric|min:0',
             'duration_in_days' => 'required|integer|min:1',
             'is_active' => 'boolean'
         ]);
 
-        Plan::create($validated);
+        Plan::create(array_merge($validated, ['litres' => 500]));
 
         return redirect()->route('admin.plans.index')
             ->with('success', 'Plan created successfully');
@@ -48,7 +47,6 @@ class PlanController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'purifier_type' => 'required|in:ro,alkaline',
-            'litres' => 'required|integer|min:1',
             'price' => 'required|numeric|min:0',
             'duration_in_days' => 'required|integer|min:1',
             'is_active' => 'boolean'

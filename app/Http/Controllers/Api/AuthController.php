@@ -16,6 +16,13 @@ class AuthController extends Controller
             'phone' => 'required|string|size:10',
         ]);
 
+        // Check if the phone number exists in the database
+        if (!Customer::where('phone', $request->phone)->exists()) {
+            return response()->json([
+                'message' => 'This number is not registered with us.',
+            ], 404);
+        }
+
         // Generate OTP
         $otp = rand(100000, 999999);
 

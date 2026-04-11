@@ -37,8 +37,6 @@
                         @enderror
                     </div>
 
-                    <input type="hidden" name="litres" value="{{ $plan->litres }}">
-
                     <div>
                         <label for="price" class="block text-sm font-medium text-gray-700">Price (₹)</label>
                         <input type="number" name="price" id="price" step="0.01"

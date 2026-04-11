@@ -148,18 +148,18 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Next Service Reminder</label>
-                            <div class="mt-2 flex items-center space-x-6">
-                                <label class="inline-flex items-center">
+                            <div class="mt-2 grid grid-cols-3 gap-2">
+                                <label class="inline-flex items-center justify-center gap-2 rounded-md border border-gray-200 px-2 py-2">
                                     <input type="radio" name="next_service_reminder" value="3" class="text-indigo-600 focus:ring-indigo-500">
-                                    <span class="ml-2 text-sm text-gray-700">3 Months</span>
+                                    <span class="text-sm text-gray-700 font-medium">3M</span>
                                 </label>
-                                <label class="inline-flex items-center">
+                                <label class="inline-flex items-center justify-center gap-2 rounded-md border border-gray-200 px-2 py-2">
                                     <input type="radio" name="next_service_reminder" value="6" checked class="text-indigo-600 focus:ring-indigo-500">
-                                    <span class="ml-2 text-sm text-gray-700">6 Months</span>
+                                    <span class="text-sm text-gray-700 font-medium">6M</span>
                                 </label>
-                                <label class="inline-flex items-center">
+                                <label class="inline-flex items-center justify-center gap-2 rounded-md border border-gray-200 px-2 py-2">
                                     <input type="radio" name="next_service_reminder" value="12" class="text-indigo-600 focus:ring-indigo-500">
-                                    <span class="ml-2 text-sm text-gray-700">12 Months</span>
+                                    <span class="text-sm text-gray-700 font-medium">12M</span>
                                 </label>
                             </div>
                         </div>
