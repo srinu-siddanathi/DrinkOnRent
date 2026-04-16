@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Models\Purifier;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Razorpay\Api\Api;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
@@ -86,7 +88,32 @@ class PaymentController extends Controller
             'razorpay_order_id' => 'required|string',
             'razorpay_payment_id' => 'required|string',
             'razorpay_signature' => 'required|string',
+            'purifier_id' => 'nullable|integer|exists:purifiers,id',
         ]);
+
+        $payment = Payment::with(['subscription.plan'])
+            ->where('razorpay_order_id', $request->razorpay_order_id)
+            ->firstOrFail();
+
+        $subscription = $payment->subscription;
+        if (!$subscription || $subscription->customer_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized access to payment'], 403);
+        }
+
+        if (!$subscription->plan) {
+            return response()->json(['message' => 'Subscription plan not found'], 404);
+        }
+
+        $purifier = null;
+        if ($request->filled('purifier_id')) {
+            $purifier = Purifier::where('id', $request->purifier_id)
+                ->where('customer_id', $request->user()->id)
+                ->first();
+
+            if (!$purifier) {
+                return response()->json(['message' => 'Invalid purifier for this customer'], 422);
+            }
+        }
 
         $api = app(Api::class);
 
@@ -101,38 +128,55 @@ class PaymentController extends Controller
         } catch (\Exception $e) {
              Log::error('Razorpay Signature Verification Failed: ' . $e->getMessage());
 
-             $payment = Payment::where('razorpay_order_id', $request->razorpay_order_id)->first();
-             if ($payment) {
-                 $payment->update(['status' => 'failed']);
-                 $payment->subscription->update(['payment_status' => 'failed']);
-             }
+               if ($payment->status !== 'completed') {
+                  $payment->update(['status' => 'failed']);
+                  $subscription->update(['payment_status' => 'failed']);
+               }
 
              return response()->json(['message' => 'Payment verification failed', 'error' => $e->getMessage()], 400);
         }
 
-        $payment = Payment::where('razorpay_order_id', $request->razorpay_order_id)->firstOrFail();
+        DB::transaction(function () use ($payment, $subscription, $request, $purifier) {
+            $lockedPayment = Payment::whereKey($payment->id)->lockForUpdate()->first();
+            $lockedSubscription = Subscription::with('plan')
+                ->whereKey($subscription->id)
+                ->lockForUpdate()
+                ->first();
 
-        if ($payment->status === 'completed') {
-             return response()->json(['message' => 'Payment already verified']);
-        }
+            if (!$lockedPayment || !$lockedSubscription) {
+                abort(404);
+            }
 
-        $payment->update([
-            'status' => 'completed',
-            'razorpay_payment_id' => $request->razorpay_payment_id,
-            'razorpay_signature' => $request->razorpay_signature,
-        ]);
+            if ($lockedPayment->status !== 'completed') {
+                $lockedPayment->update([
+                    'status' => 'completed',
+                    'razorpay_payment_id' => $request->razorpay_payment_id,
+                    'razorpay_signature' => $request->razorpay_signature,
+                ]);
 
-        $subscription = $payment->subscription;
+                $lockedSubscription->update([
+                    'payment_status' => 'completed',
+                    'status' => 'active',
+                    'start_date' => now(),
+                    'end_date' => now()->addDays($lockedSubscription->plan->duration_in_days),
+                ]);
+            }
 
-        $subscription->update([
-            'payment_status' => 'completed',
-            'status' => 'active',
-            'start_date' => now(),
-            'end_date' => now()->addDays($subscription->plan->duration_in_days),
-        ]);
+            if ($purifier && is_null($lockedSubscription->purifier_id)) {
+                $lockedSubscription->update([
+                    'purifier_id' => $purifier->id,
+                ]);
+            }
+        });
+
+        $subscription = Subscription::with('plan')->findOrFail($subscription->id);
+
+        $message = $payment->status === 'completed'
+            ? 'Payment already verified; subscription is active'
+            : 'Payment successful and subscription activated';
 
         return response()->json([
-            'message' => 'Payment successful and subscription activated',
+            'message' => $message,
             'subscription' => $subscription
         ]);
     }

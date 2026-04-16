@@ -395,6 +395,8 @@ Status Code: 404
 #### 10. Activate Subscription
 Activate a subscription after payment is completed.
 
+Legacy endpoint: mobile clients should use `POST /api/payment/verify` to complete payment verification and activation in one call.
+
 **Endpoint:** `POST /api/subscriptions/{subscription}/activate`
 
 **Authentication:** Required
@@ -505,6 +507,8 @@ Process payment for a subscription.
   }
 }
 ```
+
+After Razorpay checkout success, call `POST /api/payment/verify` as the single post-payment API. Optional field `purifier_id` can be sent to bind the activated subscription to a purifier that belongs to the customer.
 
 **Error Response (Payment Failed):**
 ```json

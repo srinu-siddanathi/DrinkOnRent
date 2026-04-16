@@ -42,7 +42,7 @@ class SubscriptionController extends Controller
         $subscription->update([
             'status' => 'active',
             'start_date' => now(),
-            'end_date' => now()->addDays($subscription->plan->duration_days),
+            'end_date' => now()->addDays($subscription->plan->duration_in_days),
         ]);
 
         return response()->json([

@@ -56,7 +56,7 @@ Use the `order_id` and `key` from this response to launch the Razorpay Checkout 
 **Endpoint:** `POST /api/payment/verify`
 
 **Description:**
-Verifies the payment signature returned by Razorpay after a successful transaction. This confirms the payment is valid and updates the subscription status.
+Verifies the payment signature returned by Razorpay after a successful transaction. This confirms the payment, activates the subscription, and can optionally bind the subscription to a purifier in the same request.
 
 **Headers:**
 - `Authorization`: Bearer <token>
@@ -69,9 +69,12 @@ Verifies the payment signature returned by Razorpay after a successful transacti
 {
     "razorpay_order_id": "order_EKwxwVidXV1Mbo",
     "razorpay_payment_id": "pay_29QQoPNiJQ9",
-    "razorpay_signature": "e84e1b9b..."
+    "razorpay_signature": "e84e1b9b...",
+    "purifier_id": 12
 }
 ```
+
+`purifier_id` is optional. If provided, it must belong to the authenticated customer.
 
 **Response (Success - 200 OK):**
 
@@ -82,6 +85,7 @@ Verifies the payment signature returned by Razorpay after a successful transacti
         "id": 1,
         "status": "active",
         "payment_status": "completed",
+        "purifier_id": 12,
         "start_date": "2024-01-01T00:00:00.000000Z",
         "end_date": "2024-01-31T00:00:00.000000Z",
         ...
@@ -98,5 +102,13 @@ Verifies the payment signature returned by Razorpay after a successful transacti
 }
 ```
 
+**Response (Error - 422 Unprocessable Entity):**
+
+```json
+{
+    "message": "Invalid purifier for this customer"
+}
+```
+
 **Usage in Android:**
-Call this endpoint inside the `onPaymentSuccess` callback of the Razorpay SDK, passing the `payment_id` and `signature` received along with the `order_id` used.
+Call this endpoint inside the `onPaymentSuccess` callback of the Razorpay SDK, passing the `payment_id`, `signature`, and `order_id` used. This is the single post-payment API call; no separate subscription activation API call is needed.

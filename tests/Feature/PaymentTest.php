@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\Plan;
+use App\Models\Purifier;
 use App\Models\Subscription;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
@@ -44,6 +45,15 @@ class PaymentTest extends TestCase
             'price' => 100.00,
             'duration_in_days' => 30,
             'is_active' => true,
+        ]);
+    }
+
+    protected function createPurifier(Customer $customer)
+    {
+        return Purifier::create([
+            'customer_id' => $customer->id,
+            'model' => 'DOR-100',
+            'type' => 'ro',
         ]);
     }
 
@@ -135,6 +145,95 @@ class PaymentTest extends TestCase
             'payment_status' => 'completed',
             'status' => 'active',
         ]);
+    }
+
+    public function test_verify_payment_can_assign_purifier_in_same_call()
+    {
+        $customer = $this->createCustomer();
+        $plan = $this->createPlan();
+        $purifier = $this->createPurifier($customer);
+
+        $subscription = Subscription::create([
+            'customer_id' => $customer->id,
+            'plan_id' => $plan->id,
+            'status' => 'pending',
+        ]);
+
+        Payment::create([
+            'subscription_id' => $subscription->id,
+            'razorpay_order_id' => 'order_with_purifier',
+            'amount' => 100.00,
+            'currency' => 'INR',
+            'status' => 'pending',
+        ]);
+
+        $mockUtility = Mockery::mock('Razorpay\\Api\\Utility');
+        $mockUtility->shouldReceive('verifyPaymentSignature')->once();
+
+        $mockApi = Mockery::mock(Api::class);
+        $mockApi->utility = $mockUtility;
+
+        $this->instance(Api::class, $mockApi);
+
+        $payload = [
+            'razorpay_order_id' => 'order_with_purifier',
+            'razorpay_payment_id' => 'pay_with_purifier',
+            'razorpay_signature' => 'sig_with_purifier',
+            'purifier_id' => $purifier->id,
+        ];
+
+        $response = $this->actingAs($customer, 'sanctum')
+            ->postJson('/api/payment/verify', $payload);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('subscription.purifier_id', $purifier->id);
+
+        $this->assertDatabaseHas('subscriptions', [
+            'id' => $subscription->id,
+            'purifier_id' => $purifier->id,
+            'payment_status' => 'completed',
+            'status' => 'active',
+        ]);
+    }
+
+    public function test_cannot_verify_payment_for_another_users_order()
+    {
+        $owner = $this->createCustomer();
+        $attacker = Customer::create([
+            'first_name' => 'Attacker',
+            'last_name' => 'User',
+            'phone' => '9898989898',
+            'email' => 'verify-attacker@example.com',
+            'is_phone_verified' => true,
+        ]);
+
+        $plan = $this->createPlan();
+
+        $subscription = Subscription::create([
+            'customer_id' => $owner->id,
+            'plan_id' => $plan->id,
+            'status' => 'pending',
+        ]);
+
+        Payment::create([
+            'subscription_id' => $subscription->id,
+            'razorpay_order_id' => 'order_owned_by_other',
+            'amount' => 100.00,
+            'currency' => 'INR',
+            'status' => 'pending',
+        ]);
+
+        $payload = [
+            'razorpay_order_id' => 'order_owned_by_other',
+            'razorpay_payment_id' => 'pay_owned_by_other',
+            'razorpay_signature' => 'sig_owned_by_other',
+        ];
+
+        $response = $this->actingAs($attacker, 'sanctum')
+            ->postJson('/api/payment/verify', $payload);
+
+        $response->assertStatus(403)
+            ->assertJson(['message' => 'Unauthorized access to payment']);
     }
 
     public function test_cannot_create_order_for_another_users_subscription()
