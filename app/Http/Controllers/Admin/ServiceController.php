@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Area;
 use App\Models\Service;
 use App\Models\Customer;
+use App\Models\SparePart;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 
 class ServiceController extends Controller
 {
@@ -27,19 +30,25 @@ class ServiceController extends Controller
         }
 
         $customers = $query->latest()->paginate(10);
-        $areas = Customer::distinct()->pluck('area')->filter();
+        $masterAreas = Area::query()->orderBy('name')->pluck('name');
+        $customerAreas = Customer::query()->distinct()->pluck('area')->filter();
+        $areas = $masterAreas->merge($customerAreas)->unique()->sort()->values();
+        $spareParts = SparePart::query()->orderBy('name')->pluck('name');
 
-        return view('admin.services.index', compact('customers', 'areas'));
+        return view('admin.services.index', compact('customers', 'areas', 'spareParts'));
     }
 
     public function store(Request $request)
     {
+        $allowedSpareParts = SparePart::query()->pluck('name')->all();
+
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'support_request_id' => 'nullable|exists:support_requests,id',
             'service_date' => 'required|date',
             'next_service_reminder' => 'required|integer|in:3,6,12',
             'spare_parts' => 'nullable|array',
+            'spare_parts.*' => ['string', 'max:255', Rule::in($allowedSpareParts)],
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -72,7 +81,11 @@ class ServiceController extends Controller
             'year' => 'nullable|digits:4',
         ]);
 
-        $servicesQuery = $customer->services()->with('customer')->latest('service_date');
+        $servicesQuery = $customer->services()
+            ->with('customer')
+            ->orderByDesc('service_date')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
 
         if (!empty($validated['year'])) {
             $servicesQuery->whereYear('service_date', (int) $validated['year']);

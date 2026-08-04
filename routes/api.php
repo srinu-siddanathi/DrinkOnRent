@@ -33,6 +33,7 @@ Route::group(['middleware' => ['api']], function() {
 
     // Public routes
     Route::post('/send-otp', [App\Http\Controllers\Api\AuthController::class, 'sendOtp']);
+    Route::post('/resend-otp', [App\Http\Controllers\Api\AuthController::class, 'resendOtp']);
     Route::post('/verify-otp', [App\Http\Controllers\Api\AuthController::class, 'verifyOtp']);
 
     // Protected routes

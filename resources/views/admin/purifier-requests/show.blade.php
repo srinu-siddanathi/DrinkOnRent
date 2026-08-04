@@ -32,7 +32,7 @@
                 </div>
                 <div class="flex flex-col space-y-1">
                     <span class="text-sm text-gray-500">Requested At</span>
-                    <span class="text-base text-gray-900">{{ $purifierRequest->created_at->format('d M, Y H:i A') }}</span>
+                    <span class="text-base text-gray-900">{{ $purifierRequest->created_at->format('jS M Y g:i A') }}</span>
                 </div>
                 <div class="flex flex-col space-y-1">
                     <span class="text-sm text-gray-500">Location Address</span>
@@ -44,7 +44,7 @@
                 </div>
                 <div class="flex flex-col space-y-1">
                     <span class="text-sm text-gray-500">Date of Birth</span>
-                    <span class="text-base text-gray-900">{{ $purifierRequest->date_of_birth ? \Carbon\Carbon::parse($purifierRequest->date_of_birth)->format('d M, Y') : '-' }}</span>
+                    <span class="text-base text-gray-900">{{ $purifierRequest->date_of_birth ? \Carbon\Carbon::parse($purifierRequest->date_of_birth)->format('jS M Y g:i A') : '-' }}</span>
                 </div>
                 <div class="flex flex-col space-y-1">
                     <span class="text-sm text-gray-500">Type of Residence</span>

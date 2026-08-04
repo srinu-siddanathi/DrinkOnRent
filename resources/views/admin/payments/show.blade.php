@@ -24,7 +24,7 @@
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500">Payment Date</dt>
-                    <dd class="mt-1 text-gray-900">{{ $payment->created_at->format('M d, Y h:i A') }}</dd>
+                    <dd class="mt-1 text-gray-900">{{ $payment->created_at->format('jS M Y g:i A') }}</dd>
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500">Transaction ID</dt>
@@ -96,15 +96,15 @@
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500">Installation Date</dt>
-                    <dd class="mt-1 text-gray-900">{{ $payment->purifier->installation_date ? $payment->purifier->installation_date->format('M d, Y') : 'Not installed' }}</dd>
+                    <dd class="mt-1 text-gray-900">{{ $payment->purifier->installation_date ? $payment->purifier->installation_date->format('jS M Y g:i A') : 'Not installed' }}</dd>
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500">Last Service</dt>
-                    <dd class="mt-1 text-gray-900">{{ $payment->purifier->last_service_date ? $payment->purifier->last_service_date->format('M d, Y') : 'No service yet' }}</dd>
+                    <dd class="mt-1 text-gray-900">{{ $payment->purifier->last_service_date ? $payment->purifier->last_service_date->format('jS M Y g:i A') : 'No service yet' }}</dd>
                 </div>
                 <div>
                     <dt class="text-sm font-medium text-gray-500">Next Service</dt>
-                    <dd class="mt-1 text-gray-900">{{ $payment->purifier->next_service_date ? $payment->purifier->next_service_date->format('M d, Y') : 'Not scheduled' }}</dd>
+                    <dd class="mt-1 text-gray-900">{{ $payment->purifier->next_service_date ? $payment->purifier->next_service_date->format('jS M Y g:i A') : 'Not scheduled' }}</dd>
                 </div>
             </div>
         </div>
@@ -160,7 +160,7 @@
                                                     {{ $historyPayment->paymentRecord->razorpay_payment_id ?? '-' }}
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {{ $historyPayment->created_at->format('M d, Y h:i A') }}
+                                                    {{ $historyPayment->created_at->format('jS M Y g:i A') }}
                                                 </td>
                                             </tr>
                                         @empty

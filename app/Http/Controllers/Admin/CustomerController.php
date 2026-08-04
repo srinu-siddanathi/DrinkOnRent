@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Area;
 use App\Models\Customer;
 use App\Models\Purifier;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ class CustomerController extends Controller
             'subscriptions.plan',
             'subscriptions.purifier',
             'purifiers'
-        ])->latest()->paginate(10);
+        ])->orderByDesc('created_at')->paginate(10);
 
         return view('admin.customers.index', compact('customers'));
     }
@@ -36,13 +37,21 @@ class CustomerController extends Controller
 
     public function create()
     {
-        return view('admin.customers.create');
+        $areas = Area::query()->orderBy('name')->pluck('name');
+        return view('admin.customers.create', compact('areas'));
     }
 
     public function edit(Customer $customer)
     {
         $customer->load(['purifiers.subscription.plan']);
-        return view('admin.customers.edit', compact('customer'));
+        $areas = Area::query()->orderBy('name')->pluck('name');
+
+        if ($customer->area && !$areas->contains($customer->area)) {
+            $areas->push($customer->area);
+            $areas = $areas->sort()->values();
+        }
+
+        return view('admin.customers.edit', compact('customer', 'areas'));
     }
 
     public function update(Request $request, Customer $customer)
@@ -185,7 +194,7 @@ class CustomerController extends Controller
             return response()->json(['customers' => []]);
         }
 
-        $customers = Customer::with([
+                $customers = Customer::with([
             'subscriptions' => function($q) {
                 $q->where('status', 'active')
                   ->where('end_date', '>', now())
@@ -195,10 +204,12 @@ class CustomerController extends Controller
             'subscriptions.purifier',
             'purifiers'
         ])
-        ->where('first_name', 'like', "%{$query}%")
-        ->orWhere('phone', 'like', "%{$query}%")
-        ->orWhere('area', 'like', "%{$query}%")
-        ->latest()
+        ->where(function ($q) use ($query) {
+            $q->where('first_name', 'like', "%{$query}%")
+              ->orWhere('phone', 'like', "%{$query}%")
+              ->orWhere('area', 'like', "%{$query}%");
+        })
+        ->orderByDesc('created_at')
         ->limit(10)
         ->get();
 

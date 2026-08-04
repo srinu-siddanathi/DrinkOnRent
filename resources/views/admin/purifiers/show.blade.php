@@ -71,21 +71,21 @@
                     <div>
                         <h3 class="text-sm font-medium text-gray-500">Installation Date</h3>
                         <p class="mt-1 text-sm text-gray-900">
-                            {{ $purifier->installation_date ? $purifier->installation_date->format('Y-m-d') : '-' }}
+                            {{ $purifier->installation_date ? $purifier->installation_date->format('jS M Y g:i A') : '-' }}
                         </p>
                     </div>
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500">Last Service Date</h3>
                         <p class="mt-1 text-sm text-gray-900">
-                            {{ $purifier->last_service_date ? $purifier->last_service_date->format('Y-m-d') : '-' }}
+                            {{ $purifier->last_service_date ? $purifier->last_service_date->format('jS M Y g:i A') : '-' }}
                         </p>
                     </div>
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500">Next Service Date</h3>
                         <p class="mt-1 text-sm text-gray-900">
-                            {{ $purifier->next_service_date ? $purifier->next_service_date->format('Y-m-d') : '-' }}
+                            {{ $purifier->next_service_date ? $purifier->next_service_date->format('jS M Y g:i A') : '-' }}
                         </p>
                     </div>
 
@@ -101,7 +101,7 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-500">Created At</h3>
-                        <p class="mt-1 text-sm text-gray-900">{{ $purifier->created_at->format('Y-m-d H:i') }}</p>
+                        <p class="mt-1 text-sm text-gray-900">{{ $purifier->created_at->format('jS M Y g:i A') }}</p>
                     </div>
 
                     <div class="col-span-2">
@@ -165,7 +165,7 @@
                             @if($payments->isNotEmpty())
                                 @foreach($payments as $payment)
                                 <tr>
-                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ $payment->created_at->format('Y-m-d H:i') }}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ $payment->created_at->format('jS M Y g:i A') }}</td>
                                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ $payment->subscription->plan->name ?? '-' }}</td>
                                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">₹{{ number_format($payment->amount, 2) }}</td>
                                     <td class="px-4 py-2 whitespace-nowrap text-sm">
@@ -182,7 +182,7 @@
                             @elseif(isset($fallbackPayments) && $fallbackPayments->isNotEmpty())
                                 @foreach($fallbackPayments as $payment)
                                 <tr>
-                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ $payment->created_at->format('Y-m-d H:i') }}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ $payment->created_at->format('jS M Y g:i A') }}</td>
                                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ $payment->plan_name }}</td>
                                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">₹{{ number_format($payment->amount, 2) }}</td>
                                     <td class="px-4 py-2 whitespace-nowrap text-sm">

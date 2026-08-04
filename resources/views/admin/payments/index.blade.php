@@ -85,7 +85,7 @@
                                                 {{ $payment->paymentRecord->razorpay_payment_id ?? '-' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {{ $payment->created_at->format('M d, Y h:i A') }}
+                                                {{ $payment->created_at->format('jS M Y g:i A') }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <a href="{{ route('admin.payments.show', $payment) }}" 
@@ -134,14 +134,21 @@
     function formatDate(dateString) {
         const date = new Date(dateString);
         if (Number.isNaN(date.getTime())) return '-';
-        return date.toLocaleString('en-US', {
-            month: 'short',
-            day: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
+
+        const day = date.getDate();
+        const suffix = (day % 10 === 1 && day !== 11) ? 'st'
+            : (day % 10 === 2 && day !== 12) ? 'nd'
+            : (day % 10 === 3 && day !== 13) ? 'rd'
+            : 'th';
+        const month = date.toLocaleString('en-US', { month: 'short' });
+        const year = date.getFullYear();
+        const time = date.toLocaleString('en-US', {
+            hour: 'numeric',
             minute: '2-digit',
             hour12: true,
         });
+
+        return `${day}${suffix} ${month} ${year} ${time}`;
     }
 
     function paymentStatusBadge(status) {

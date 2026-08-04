@@ -39,6 +39,7 @@
                             <th class="px-3 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                             <th class="px-3 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
                             <th class="px-3 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
+                            <th class="px-3 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created DateTime</th>
                             <th class="px-3 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Purifiers</th>
                             <th class="px-3 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active Plan</th>
                             <th class="px-3 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -50,6 +51,7 @@
                             <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $customer->first_name }}</td>
                             <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $customer->phone }}</td>
                             <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $customer->area }}</td>
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $customer->created_at?->format('jS M Y g:i A') ?? '-' }}</td>
                             
                             <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 @if($customer->purifiers->count() > 0)
@@ -142,7 +144,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                            <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
                                 No customers found.
                             </td>
                         </tr>
@@ -166,6 +168,26 @@
         let searchTimeout;
         let wasSearching = false;
 
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            if (Number.isNaN(date.getTime())) return '-';
+
+            const day = date.getDate();
+            const suffix = (day % 10 === 1 && day !== 11) ? 'st'
+                : (day % 10 === 2 && day !== 12) ? 'nd'
+                : (day % 10 === 3 && day !== 13) ? 'rd'
+                : 'th';
+            const month = date.toLocaleString('en-US', { month: 'short' });
+            const year = date.getFullYear();
+            const time = date.toLocaleString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+            });
+
+            return `${day}${suffix} ${month} ${year} ${time}`;
+        }
+
         searchInput.addEventListener('input', function() {
             const query = this.value.trim();
             
@@ -187,7 +209,7 @@
                         const customers = data.customers;
                         
                         if (customers.length === 0) {
-                            customerTableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No customers found.</td></tr>';
+                            customerTableBody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">No customers found.</td></tr>';
                         } else {
                             customerTableBody.innerHTML = customers.map(customer => renderCustomerRow(customer)).join('');
                         }
@@ -212,6 +234,7 @@
                     <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">${customer.first_name}</td>
                     <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">${customer.phone}</td>
                     <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">${customer.area || ''}</td>
+                    <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatDate(customer.created_at)}</td>
                     <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm">
                         <div class="flex flex-col space-y-2">${purifiersHTML}</div>
                     </td>

@@ -19,8 +19,26 @@ Sends an OTP to the provided phone number.
 **Response (Success - 200 OK):**
 ```json
 {
-    "message": "OTP sent successfully",
-    "otp": 123456 // For development only
+    "message": "OTP sent successfully"
+}
+```
+
+**Resend OTP Endpoint:** `POST /api/resend-otp`
+
+**Description:**
+Regenerates and sends a fresh OTP to the same registered phone number.
+
+**Request Body:**
+```json
+{
+    "phone": "1234567890"
+}
+```
+
+**Response (Success - 200 OK):**
+```json
+{
+    "message": "OTP resent successfully"
 }
 ```
 
@@ -31,7 +49,7 @@ Sends an OTP to the provided phone number.
 **Endpoint:** `POST /api/verify-otp`
 
 **Description:**
-Verifies the OTP and logs the user in. If the user does not exist, a new account is created.
+Verifies the OTP against MSG91 and logs the user in. If the user does not exist, a new account is created.
 
 **Request Body:**
 ```json

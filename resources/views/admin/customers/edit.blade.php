@@ -74,35 +74,19 @@
 
                     <!-- Area -->
                     <div>
-                        <label for="area" class="block text-sm font-medium text-gray-700">
-                            Area <span class="text-red-500">*</span>
-                        </label>
+                        <div class="flex items-center justify-between">
+                            <label for="area" class="block text-sm font-medium text-gray-700">
+                                Area <span class="text-red-500">*</span>
+                            </label>
+                            <a href="{{ route('admin.settings.masters.index') }}" class="text-xs font-medium text-indigo-600 hover:text-indigo-800">Manage Areas</a>
+                        </div>
                         <select name="area" id="area" 
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 @error('area') border-red-500 @enderror"
                                 required>
                             <option value="">Select Area</option>
-                            <option value="Pendurthi" {{ old('area', $customer->area) === 'Pendurthi' ? 'selected' : '' }}>Pendurthi</option>
-                            <option value="Kothavalasa" {{ old('area', $customer->area) === 'Kothavalasa' ? 'selected' : '' }}>Kothavalasa</option>
-                            <option value="Anakapelly" {{ old('area', $customer->area) === 'Anakapelly' ? 'selected' : '' }}>Anakapelly</option>
-                            <option value="Chinna Musallwada" {{ old('area', $customer->area) === 'Chinna Musallwada' ? 'selected' : '' }}>Chinna Musallwada</option>
-                            <option value="NAD Junction" {{ old('area', $customer->area) === 'NAD Junction' ? 'selected' : '' }}>NAD Junction</option>
-                            <option value="Marripalem" {{ old('area', $customer->area) === 'Marripalem' ? 'selected' : '' }}>Marripalem</option>
-                            <option value="Gajuwaka" {{ old('area', $customer->area) === 'Gajuwaka' ? 'selected' : '' }}>Gajuwaka</option>
-                            <option value="Koramanapalalem" {{ old('area', $customer->area) === 'Koramanapalalem' ? 'selected' : '' }}>Koramanapalalem</option>
-                            <option value="Duvvada" {{ old('area', $customer->area) === 'Duvvada' ? 'selected' : '' }}>Duvvada</option>
-                            <option value="Kancherapalem" {{ old('area', $customer->area) === 'Kancherapalem' ? 'selected' : '' }}>Kancherapalem</option>
-                            <option value="RTC Complex" {{ old('area', $customer->area) === 'RTC Complex' ? 'selected' : '' }}>RTC Complex</option>
-                            <option value="Maddipalem" {{ old('area', $customer->area) === 'Maddipalem' ? 'selected' : '' }}>Maddipalem</option>
-                            <option value="Madhuruwada" {{ old('area', $customer->area) === 'Madhuruwada' ? 'selected' : '' }}>Madhuruwada</option>
-                            <option value="Endada" {{ old('area', $customer->area) === 'Endada' ? 'selected' : '' }}>Endada</option>
-                            <option value="Hnumanthwada" {{ old('area', $customer->area) === 'Hnumanthwada' ? 'selected' : '' }}>Hnumanthwada</option>
-                            <option value="Akkayapalam" {{ old('area', $customer->area) === 'Akkayapalam' ? 'selected' : '' }}>Akkayapalam</option>
-                            <option value="PM Palem" {{ old('area', $customer->area) === 'PM Palem' ? 'selected' : '' }}>PM Palem</option>
-                            <option value="Allipuram" {{ old('area', $customer->area) === 'Allipuram' ? 'selected' : '' }}>Allipuram</option>
-                            <option value="Siripuram" {{ old('area', $customer->area) === 'Siripuram' ? 'selected' : '' }}>Siripuram</option>
-                            <option value="Shulanager" {{ old('area', $customer->area) === 'Shulanager' ? 'selected' : '' }}>Shulanager</option>
-                            <option value="Peddawaltair" {{ old('area', $customer->area) === 'Peddawaltair' ? 'selected' : '' }}>Peddawaltair</option>
-                            <option value="Chinnawaltair" {{ old('area', $customer->area) === 'Chinnawaltair' ? 'selected' : '' }}>Chinnawaltair</option>
+                            @foreach($areas as $area)
+                                <option value="{{ $area }}" {{ old('area', $customer->area) === $area ? 'selected' : '' }}>{{ $area }}</option>
+                            @endforeach
                         </select>
                         @error('area')
                             <p class="mt-1 text-sm text-red-500">{{ $message }}</p>

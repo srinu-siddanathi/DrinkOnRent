@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\ComplaintController;
+use App\Http\Controllers\Admin\MasterDataController;
 use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -85,6 +86,20 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Complaints
         Route::resource('complaints', ComplaintController::class);
         Route::get('complaints-search', [ComplaintController::class, 'search'])->name('complaints.search');
+
+        // Settings - Areas and Spare Parts Masters
+        Route::get('settings/masters', [MasterDataController::class, 'index'])->name('settings.masters.index');
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('areas', [MasterDataController::class, 'areas'])->name('areas.index');
+            Route::post('areas', [MasterDataController::class, 'storeArea'])->name('areas.store');
+            Route::put('areas/{area}', [MasterDataController::class, 'updateArea'])->name('areas.update');
+            Route::delete('areas/{area}', [MasterDataController::class, 'destroyArea'])->name('areas.destroy');
+
+            Route::get('spare-parts', [MasterDataController::class, 'spareParts'])->name('spare-parts.index');
+            Route::post('spare-parts', [MasterDataController::class, 'storeSparePart'])->name('spare-parts.store');
+            Route::put('spare-parts/{sparePart}', [MasterDataController::class, 'updateSparePart'])->name('spare-parts.update');
+            Route::delete('spare-parts/{sparePart}', [MasterDataController::class, 'destroySparePart'])->name('spare-parts.destroy');
+        });
     });
 });
 

@@ -140,7 +140,7 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $purifier->next_service_date ? $purifier->next_service_date->format('Y-m-d') : '-' }}
+                            {{ $purifier->next_service_date ? $purifier->next_service_date->format('jS M Y g:i A') : '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <a href="{{ route('admin.purifiers.show', $purifier) }}"
@@ -185,7 +185,21 @@
         if (Number.isNaN(date.getTime())) {
             return '-';
         }
-        return date.toISOString().slice(0, 10);
+
+        const day = date.getDate();
+        const suffix = (day % 10 === 1 && day !== 11) ? 'st'
+            : (day % 10 === 2 && day !== 12) ? 'nd'
+            : (day % 10 === 3 && day !== 13) ? 'rd'
+            : 'th';
+        const month = date.toLocaleString('en-US', { month: 'short' });
+        const year = date.getFullYear();
+        const time = date.toLocaleString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+        });
+
+        return `${day}${suffix} ${month} ${year} ${time}`;
     }
 
     function badgeForPurifierType(type) {

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Customer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -12,20 +13,31 @@ class RegistrationTest extends TestCase
 
     public function test_user_registration_flow()
     {
+        Http::fake([
+            'https://control.msg91.com/api/v5/otp*' => Http::response(['type' => 'success'], 200),
+            'https://control.msg91.com/api/v5/otp/verify*' => Http::response(['type' => 'success'], 200),
+            'https://control.msg91.com/api/v5/otp/retry*' => Http::response(['type' => 'success'], 200),
+        ]);
+
+        Customer::create([
+            'phone' => '1234567890',
+            'is_phone_verified' => true,
+        ]);
+
         // 1. Send OTP
         $response = $this->postJson('/api/send-otp', [
             'phone' => '1234567890',
         ]);
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['otp']);
-
-        $otp = $response->json('otp');
+            ->assertJson([
+                'message' => 'OTP sent successfully',
+            ]);
 
         // 2. Verify OTP
         $response = $this->postJson('/api/verify-otp', [
             'phone' => '1234567890',
-            'otp' => (string) $otp,
+            'otp' => '123456',
         ]);
 
         $response->assertStatus(200)
@@ -42,6 +54,15 @@ class RegistrationTest extends TestCase
             'first_name' => null,
             'last_name' => null,
         ]);
+
+        $response = $this->postJson('/api/resend-otp', [
+            'phone' => '1234567890',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'message' => 'OTP resent successfully',
+            ]);
 
         // 3. Register (Complete Profile)
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)

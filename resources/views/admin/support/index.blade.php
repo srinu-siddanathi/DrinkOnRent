@@ -56,7 +56,7 @@
                                     {{ ucfirst(str_replace('_', ' ', $request->status)) }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->created_at->format('Y-m-d H:i') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->created_at->format('jS M Y g:i A') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <a href="{{ route('admin.support-requests.show', $request) }}" onclick="event.stopPropagation()" class="text-indigo-600 hover:text-indigo-900">View</a>
                             </td>
@@ -103,12 +103,21 @@
     function formatDate(dateString) {
         const date = new Date(dateString);
         if (Number.isNaN(date.getTime())) return '-';
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const d = String(date.getDate()).padStart(2, '0');
-        const hh = String(date.getHours()).padStart(2, '0');
-        const mm = String(date.getMinutes()).padStart(2, '0');
-        return `${y}-${m}-${d} ${hh}:${mm}`;
+
+        const day = date.getDate();
+        const suffix = (day % 10 === 1 && day !== 11) ? 'st'
+            : (day % 10 === 2 && day !== 12) ? 'nd'
+            : (day % 10 === 3 && day !== 13) ? 'rd'
+            : 'th';
+        const month = date.toLocaleString('en-US', { month: 'short' });
+        const year = date.getFullYear();
+        const time = date.toLocaleString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+        });
+
+        return `${day}${suffix} ${month} ${year} ${time}`;
     }
 
     function renderSupportRow(item) {

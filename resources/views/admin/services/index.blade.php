@@ -66,10 +66,10 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $customer->latestService ? $customer->latestService->service_date->format('d-m-Y') : 'No service' }}
+                            {{ $customer->latestService ? $customer->latestService->service_date->format('jS M Y g:i A') : 'No service' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">
-                            {{ $customer->latestService ? $customer->latestService->expiry_date->format('d-m-Y') : '-' }}
+                            {{ $customer->latestService ? $customer->latestService->expiry_date->format('jS M Y g:i A') : '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <a href="#" onclick="event.stopPropagation(); openHistoryModal({{ $customer->id }}, '{{ addslashes($customer->name) }}'); return false;" class="text-indigo-600 hover:text-indigo-900">History</a>
@@ -125,12 +125,12 @@
                 <input type="hidden" name="customer_id" id="serviceCustomerId">
 
                 <div class="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 class="text-lg font-semibold text-gray-800 mb-4">Spare Parts</h4>
+                    <div class="mb-4 flex items-center justify-between">
+                        <h4 class="text-lg font-semibold text-gray-800">Spare Parts</h4>
+                        <a href="{{ route('admin.settings.masters.index') }}" class="text-xs font-medium text-indigo-600 hover:text-indigo-800">Manage Spare Parts</a>
+                    </div>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        @php
-                            $parts = ['Sediment', 'Spun', 'Post/Carbon', 'Membrane Housing', 'Pump', 'Float', 'Pipe', 'Carbon', 'Tap', 'Membrane', 'SV', 'SMPS', 'Diveter Wall'];
-                        @endphp
-                        @foreach($parts as $part)
+                        @foreach($spareParts as $part)
                             <label class="inline-flex items-center">
                                 <input type="checkbox" name="spare_parts[]" value="{{ $part }}" class="rounded-sm border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 <span class="ml-2 text-sm text-gray-700">{{ $part }}</span>
@@ -233,11 +233,20 @@
             return '-';
         }
 
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = date.getDate();
+        const suffix = (day % 10 === 1 && day !== 11) ? 'st'
+            : (day % 10 === 2 && day !== 12) ? 'nd'
+            : (day % 10 === 3 && day !== 13) ? 'rd'
+            : 'th';
+        const month = date.toLocaleString('en-US', { month: 'short' });
         const year = date.getFullYear();
+        const time = date.toLocaleString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+        });
 
-        return `${day}-${month}-${year}`;
+        return `${day}${suffix} ${month} ${year} ${time}`;
     }
 
     function renderServiceRow(customer) {

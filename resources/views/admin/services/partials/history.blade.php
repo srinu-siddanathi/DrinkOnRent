@@ -22,7 +22,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-900">Service #{{ $service->id }}</p>
-                        <p class="text-sm text-gray-500">{{ $service->service_date->format('d M Y') }} • Next: {{ $service->expiry_date->format('d M Y') }}</p>
+                        <p class="text-sm text-gray-500">{{ $service->service_date->format('jS M Y g:i A') }} • Next: {{ $service->expiry_date->format('jS M Y g:i A') }}</p>
                     </div>
                 </div>
                 <div>
@@ -54,7 +54,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <p class="text-sm text-gray-500">Service date</p>
-                    <p class="text-sm font-medium text-gray-900">{{ $service->service_date->format('d M Y') }}</p>
+                    <p class="text-sm font-medium text-gray-900">{{ $service->service_date->format('jS M Y g:i A') }}</p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">Status</p>
@@ -66,7 +66,7 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">Next service date</p>
-                    <p class="text-sm font-medium text-gray-900">{{ $service->expiry_date->format('d M Y') }}</p>
+                    <p class="text-sm font-medium text-gray-900">{{ $service->expiry_date->format('jS M Y g:i A') }}</p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">Customer name</p>
@@ -82,7 +82,7 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">Created at</p>
-                    <p class="text-sm font-medium text-gray-900">{{ $service->created_at->format('d M Y, h:i A') }}</p>
+                    <p class="text-sm font-medium text-gray-900">{{ $service->created_at->format('jS M Y g:i A') }}</p>
                 </div>
                 <div class="md:col-span-2">
                     <p class="text-sm text-gray-500">Address</p>

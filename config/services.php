@@ -28,6 +28,18 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
+    'msg91' => [
+        'auth_key' => env('MSG91_AUTH_KEY'),
+        'send_url' => env('MSG91_SEND_URL', 'https://control.msg91.com/api/v5/otp'),
+        'resend_url' => env('MSG91_RESEND_URL', 'https://control.msg91.com/api/v5/otp/retry'),
+        'sender_id' => env('MSG91_SENDER_ID'),
+        'template_id' => env('MSG91_TEMPLATE_ID'),
+        'reminder_template_id' => env('MSG91_REMINDER_TEMPLATE_ID'),
+        'route' => env('MSG91_ROUTE', '4'),
+        'country' => env('MSG91_COUNTRY', '91'),
+        'retry_type' => env('MSG91_RETRY_TYPE', 'text'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

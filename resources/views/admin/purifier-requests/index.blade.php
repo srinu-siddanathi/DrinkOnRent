@@ -39,7 +39,7 @@
                                     {{ ucfirst(str_replace('_', ' ', $request->status)) }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $request->created_at->format('d M, Y H:i A') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $request->created_at->format('jS M Y g:i A') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <a href="{{ route('admin.purifier-requests.show', $request) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
                             </td>

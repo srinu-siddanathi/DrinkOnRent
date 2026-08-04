@@ -21,11 +21,11 @@
                 </div>
                 <div>
                     <h3 class="text-sm font-medium text-gray-500">Start Date</h3>
-                    <p class="mt-1 text-sm text-gray-900">{{ $order->start_date?->format('Y-m-d') ?? '-' }}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ $order->start_date?->format('jS M Y g:i A') ?? '-' }}</p>
                 </div>
                 <div>
                     <h3 class="text-sm font-medium text-gray-500">End Date</h3>
-                    <p class="mt-1 text-sm text-gray-900">{{ $order->end_date?->format('Y-m-d') ?? '-' }}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ $order->end_date?->format('jS M Y g:i A') ?? '-' }}</p>
                 </div>
                 <div>
                     <h3 class="text-sm font-medium text-gray-500">Litres Remaining</h3>

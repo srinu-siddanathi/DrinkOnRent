@@ -52,7 +52,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $complaint->customer->name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $complaint->customer->phone }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-xs truncate" title="{{ $complaint->details }}">{{ Str::limit($complaint->details, 30) }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $complaint->created_at->format('d-m-Y') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $complaint->created_at->format('jS M Y g:i A') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 <form action="{{ route('admin.complaints.update', $complaint->id) }}" method="POST" class="update-status-form">
                                     @csrf
@@ -132,10 +132,21 @@
     function formatDate(dateString) {
         const date = new Date(dateString);
         if (Number.isNaN(date.getTime())) return '-';
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
+
+        const day = date.getDate();
+        const suffix = (day % 10 === 1 && day !== 11) ? 'st'
+            : (day % 10 === 2 && day !== 12) ? 'nd'
+            : (day % 10 === 3 && day !== 13) ? 'rd'
+            : 'th';
+        const month = date.toLocaleString('en-US', { month: 'short' });
         const year = date.getFullYear();
-        return `${day}-${month}-${year}`;
+        const time = date.toLocaleString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+        });
+
+        return `${day}${suffix} ${month} ${year} ${time}`;
     }
 
     function renderComplaintRow(complaint) {

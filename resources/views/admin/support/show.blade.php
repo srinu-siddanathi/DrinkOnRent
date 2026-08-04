@@ -28,7 +28,7 @@
                 </div>
                 <div>
                     <h3 class="text-sm font-medium text-gray-500">Created At</h3>
-                    <p class="mt-1 text-sm text-gray-900">{{ $supportRequest->created_at->format('Y-m-d H:i') }}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ $supportRequest->created_at->format('jS M Y g:i A') }}</p>
                 </div>
                 <div class="col-span-2">
                     <h3 class="text-sm font-medium text-gray-500">Subject</h3>
@@ -58,9 +58,9 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($supportRequest->services as $service)
                                     <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $service->service_date?->format('d-m-Y') ?? '-' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $service->service_date?->format('jS M Y g:i A') ?? '-' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $service->next_service_reminder }} Months</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $service->expiry_date?->format('d-m-Y') ?? '-' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $service->expiry_date?->format('jS M Y g:i A') ?? '-' }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-900">
                                             @if(!empty($service->spare_parts))
                                                 {{ implode(', ', $service->spare_parts) }}

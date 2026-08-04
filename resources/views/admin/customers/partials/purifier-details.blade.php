@@ -6,7 +6,7 @@
 <div class="flex justify-between items-center">
     <span class="text-sm text-gray-500">Installed On</span>
     <span class="text-sm text-gray-900">
-        {{ $purifier->installation_date ? $purifier->installation_date->format('M d, Y') : 'Not installed' }}
+        {{ $purifier->installation_date ? $purifier->installation_date->format('jS M Y g:i A') : 'Not installed' }}
     </span>
 </div>
 

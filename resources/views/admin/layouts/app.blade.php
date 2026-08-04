@@ -14,6 +14,11 @@
         body.menu-open {
             overflow: hidden;
         }
+
+        /* Zebra rows for admin list tables */
+        main .overflow-x-auto table tbody tr:nth-child(even) {
+            background-color: #eff6ff;
+        }
         
         /* Sidebar collapsed state */
         #sidebar.sidebar-collapsed {
@@ -171,6 +176,8 @@
                             <span class="font-medium">Services</span>
                         </a>
 
+                        
+
                         <!-- <a href="{{ route('admin.orders.index') }}"
                            class="flex items-center px-4 py-3 text-base rounded-lg transition-colors duration-200 
                                {{ request()->routeIs('admin.orders.*') ? 'bg-blue-700 text-white' : 'text-blue-100 hover:bg-blue-800 hover:text-white' }}">
@@ -221,6 +228,15 @@
                                {{ request()->routeIs('admin.complaints.*') ? 'bg-blue-700 text-white' : 'text-blue-100 hover:bg-blue-800 hover:text-white' }}">
                             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
                             <span class="font-medium">Complaints</span>
+                        </a>
+
+                        <a href="{{ route('admin.settings.masters.index') }}"
+                           class="flex items-center px-4 py-3 text-base rounded-lg transition-colors duration-200
+                               {{ request()->routeIs('admin.settings.*') ? 'bg-blue-700 text-white' : 'text-blue-100 hover:bg-blue-800 hover:text-white' }}">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16"/>
+                            </svg>
+                            <span class="font-medium">Settings</span>
                         </a>
 
                         <a href="{{ route('admin.customers.bin') }}"

@@ -27,7 +27,7 @@
                             <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $customer->first_name }}</td>
                             <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $customer->phone }}</td>
                             <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $customer->area }}</td>
-                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $customer->deleted_at->format('Y-m-d H:i:s') }}</td>
+                            <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $customer->deleted_at->format('jS M Y g:i A') }}</td>
                             <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex space-x-3">
                                     <form action="{{ route('admin.customers.restore', $customer->id) }}" method="POST">
