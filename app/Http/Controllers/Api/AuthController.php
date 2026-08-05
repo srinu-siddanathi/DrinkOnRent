@@ -85,6 +85,7 @@ class AuthController extends Controller
             ];
         }
 
+        $sendUrl = $config['send_url'] ?? 'https://control.msg91.com/api/v5/otp';
         $query = http_build_query([
             'template_id' => $config['template_id'],
             'mobile' => $phone,
@@ -94,7 +95,7 @@ class AuthController extends Controller
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
             'authkey' => $config['auth_key'],
-        ])->post('https://control.msg91.com/api/v5/otp?' . $query, []);
+        ])->post($sendUrl . '?' . $query, []);
 
         if (!$response->successful()) {
             return [
@@ -120,9 +121,11 @@ class AuthController extends Controller
             ];
         }
 
+        $verifyUrl = $config['verify_url'] ?? 'https://control.msg91.com/api/v5/otp/verify';
+
         $response = Http::withHeaders([
             'authkey' => $config['auth_key'],
-        ])->get('https://control.msg91.com/api/v5/otp/verify', [
+        ])->get($verifyUrl, [
             'mobile' => $phone,
             'otp' => $otp,
         ]);
@@ -160,13 +163,14 @@ class AuthController extends Controller
             ];
         }
 
+        $resendUrl = $config['resend_url'] ?? 'https://control.msg91.com/api/v5/otp/retry';
         $query = http_build_query([
             'authkey' => $config['auth_key'],
             'retrytype' => $config['retry_type'] ?? 'text',
             'mobile' => $phone,
         ]);
 
-        $response = Http::get('https://control.msg91.com/api/v5/otp/retry?' . $query);
+        $response = Http::get($resendUrl . '?' . $query);
 
         if (!$response->successful()) {
             return [

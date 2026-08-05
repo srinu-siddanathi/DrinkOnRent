@@ -31,9 +31,11 @@ return [
     'msg91' => [
         'auth_key' => env('MSG91_AUTH_KEY'),
         'send_url' => env('MSG91_SEND_URL', 'https://control.msg91.com/api/v5/otp'),
+        'verify_url' => env('MSG91_VERIFY_URL', 'https://control.msg91.com/api/v5/otp/verify'),
         'resend_url' => env('MSG91_RESEND_URL', 'https://control.msg91.com/api/v5/otp/retry'),
         'sender_id' => env('MSG91_SENDER_ID'),
         'template_id' => env('MSG91_TEMPLATE_ID'),
+        'flow_url' => env('MSG91_FLOW_URL', 'https://control.msg91.com/api/v5/flow/'),
         'reminder_template_id' => env('MSG91_REMINDER_TEMPLATE_ID'),
         'route' => env('MSG91_ROUTE', '4'),
         'country' => env('MSG91_COUNTRY', '91'),

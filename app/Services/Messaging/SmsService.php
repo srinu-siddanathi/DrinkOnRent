@@ -12,6 +12,7 @@ class SmsService
         $senderId = config('services.msg91.sender_id');
         $route = config('services.msg91.route', '4');
         $country = config('services.msg91.country', '91');
+        $flowUrl = config('services.msg91.flow_url', 'https://control.msg91.com/api/v5/flow/');
 
         if (!$authKey || !$templateId) {
             return [
@@ -31,7 +32,7 @@ class SmsService
         $response = Http::withHeaders([
             'authkey' => $authKey,
             'accept' => 'application/json',
-        ])->post('https://control.msg91.com/api/v5/flow/', $payload);
+        ])->post($flowUrl, $payload);
 
         if (!$response->successful()) {
             return [

@@ -94,6 +94,37 @@ class RegistrationTest extends TestCase
         ]);
     }
 
+    public function test_send_otp_uses_configured_msg91_send_url()
+    {
+        config()->set('services.msg91.auth_key', 'test-auth-key');
+        config()->set('services.msg91.template_id', 'test-template');
+        config()->set('services.msg91.send_url', 'https://msg91.example.test/otp');
+
+        Http::fake([
+            'https://msg91.example.test/otp*' => Http::response(['type' => 'success'], 200),
+        ]);
+
+        Customer::create([
+            'phone' => '1234567890',
+            'is_phone_verified' => true,
+        ]);
+
+        $response = $this->postJson('/api/send-otp', [
+            'phone' => '1234567890',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'message' => 'OTP sent successfully',
+            ]);
+
+        Http::assertSent(function ($request) {
+            return str_starts_with($request->url(), 'https://msg91.example.test/otp?')
+                && str_contains($request->url(), 'mobile=1234567890')
+                && str_contains($request->url(), 'authkey=test-auth-key');
+        });
+    }
+
     public function test_registration_validation()
     {
         $customer = Customer::create([
