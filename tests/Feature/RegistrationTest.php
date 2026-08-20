@@ -125,6 +125,28 @@ class RegistrationTest extends TestCase
         });
     }
 
+    public function test_send_otp_does_not_redirect_for_json_api_requests()
+    {
+        Http::fake([
+            'https://control.msg91.com/api/v5/otp*' => Http::response(['type' => 'success'], 200),
+        ]);
+
+        Customer::create([
+            'phone' => '8328456569',
+            'is_phone_verified' => true,
+        ]);
+
+        $response = $this->withHeader('Accept', 'application/json')
+            ->post('/api/send-otp', [
+                'phone' => '8328456569',
+            ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'message' => 'OTP sent successfully',
+            ]);
+    }
+
     public function test_registration_validation()
     {
         $customer = Customer::create([

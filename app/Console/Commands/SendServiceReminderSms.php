@@ -42,10 +42,9 @@ class SendServiceReminderSms extends Command
             }
 
             $result = $smsService->sendFlowSms($customer->phone, $templateId, [
-                'customer_name' => trim(($customer->first_name ?? '') . ' ' . ($customer->last_name ?? '')) ?: $customer->phone,
-                'expiry_date' => optional($service->expiry_date)->format('d-m-Y'),
-                'service_date' => optional($service->service_date)->format('d-m-Y'),
-                'next_service_reminder' => $service->next_service_reminder,
+                'name' => trim(($customer->first_name ?? '') . ' ' . ($customer->last_name ?? '')) ?: $customer->phone,
+                'number' => number_format((float) $service->amount ?? 0, 2, '.', ''),
+                'date' => optional($service->expiry_date)->format('d-m-Y'),
             ]);
 
             if ($result['ok']) {

@@ -40,6 +40,7 @@ return [
         'route' => env('MSG91_ROUTE', '4'),
         'country' => env('MSG91_COUNTRY', '91'),
         'retry_type' => env('MSG91_RETRY_TYPE', 'text'),
+        'verify_ssl' => env('MSG91_VERIFY_SSL', false),
     ],
 
     'slack' => [

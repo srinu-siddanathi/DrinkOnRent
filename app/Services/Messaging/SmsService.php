@@ -21,15 +21,18 @@ class SmsService
             ];
         }
 
-        $payload = array_merge([
+        $payload = [
             'sender' => $senderId,
             'route' => $route,
             'country' => $country,
             'mobile' => $mobile,
             'template_id' => $templateId,
-        ], $parameters);
+            'variables' => $parameters,
+        ];
 
-        $response = Http::withHeaders([
+        $response = Http::withOptions([
+            'verify' => (bool) config('services.msg91.verify_ssl', false),
+        ])->withHeaders([
             'authkey' => $authKey,
             'accept' => 'application/json',
         ])->post($flowUrl, $payload);

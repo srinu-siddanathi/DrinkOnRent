@@ -15,5 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Always return JSON for API routes, even without an explicit Accept header (e.g. Postman)
+        $exceptions->shouldRenderJsonWhen(function ($request, $e) {
+            return $request->is('api/*') || $request->expectsJson();
+        });
     })->create();

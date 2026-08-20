@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -82,31 +83,76 @@ class AuthController extends Controller
             return [
                 'ok' => false,
                 'message' => 'SMS gateway is not configured.',
+                'debug' => [
+                    'phone' => $phone,
+                    'auth_key_present' => !empty($config['auth_key']),
+                    'template_id_present' => !empty($config['template_id']),
+                ],
             ];
         }
 
         $sendUrl = $config['send_url'] ?? 'https://control.msg91.com/api/v5/otp';
-        $query = http_build_query([
+        $mobile = $this->mobileWithCountryCode($phone, $config);
+        $otpLength = 6;
+        $params = [
             'template_id' => $config['template_id'],
-            'mobile' => $phone,
+            'mobile' => $mobile,
+            'otp_length' => $otpLength,
             'authkey' => $config['auth_key'],
-        ]);
+        ];
 
-        $response = Http::withHeaders([
+        $query = http_build_query($params);
+
+        $requestUrl = $sendUrl . '?' . $query;
+        $maskedAuthKey = !empty($config['auth_key']) ? substr($config['auth_key'], 0, 4) . '...' : null;
+        $debug = [
+            'phone' => $phone,
+            'send_url' => $sendUrl,
+            'request_url' => preg_replace('/authkey=[^&]+/i', 'authkey=***REDACTED***', $requestUrl),
+            'query_params' => [
+                'template_id' => $config['template_id'],
+                'mobile' => $phone,
+                'otp_length' => $otpLength,
+                'authkey' => $maskedAuthKey,
+            ],
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'authkey' => $maskedAuthKey,
+            ],
+            'payload' => [],
+            'verify_ssl' => (bool) ($config['verify_ssl'] ?? false),
+        ];
+
+        Log::info('MSG91 send OTP request', $debug);
+
+        $response = Http::withOptions([
+            'verify' => (bool) ($config['verify_ssl'] ?? false),
+        ])->withHeaders([
             'Content-Type' => 'application/json',
             'authkey' => $config['auth_key'],
-        ])->post($sendUrl . '?' . $query, []);
+        ])->post($requestUrl, []);
+
+        $responseJson = $response->json();
+        $debug['status_code'] = $response->status();
+        $debug['response_body'] = $response->body();
+        $debug['response_json'] = $responseJson;
+        $debug['response_message'] = is_array($responseJson) && isset($responseJson['message']) ? $responseJson['message'] : null;
+        $debug['successful'] = $response->successful();
+
+        Log::info('MSG91 send OTP response', $debug);
 
         if (!$response->successful()) {
             return [
                 'ok' => false,
                 'message' => 'Failed to send OTP.',
+                'debug' => $debug,
             ];
         }
 
         return [
             'ok' => true,
             'message' => 'OTP sent successfully.',
+            'debug' => $debug,
         ];
     }
 
@@ -118,22 +164,56 @@ class AuthController extends Controller
             return [
                 'ok' => false,
                 'message' => 'SMS gateway is not configured.',
+                'debug' => [
+                    'phone' => $phone,
+                    'otp' => $otp,
+                    'auth_key_present' => !empty($config['auth_key']),
+                ],
             ];
         }
 
         $verifyUrl = $config['verify_url'] ?? 'https://control.msg91.com/api/v5/otp/verify';
+        $mobile = $this->mobileWithCountryCode($phone, $config);
+        $maskedAuthKey = !empty($config['auth_key']) ? substr($config['auth_key'], 0, 4) . '...' : null;
+        $debug = [
+            'phone' => $phone,
+            'otp' => $otp,
+            'verify_url' => $verifyUrl,
+            'query_params' => [
+                'mobile' => $mobile,
+                'otp' => $otp,
+            ],
+            'headers' => [
+                'authkey' => $maskedAuthKey,
+            ],
+            'verify_ssl' => (bool) ($config['verify_ssl'] ?? false),
+        ];
 
-        $response = Http::withHeaders([
+        Log::info('MSG91 verify OTP request', $debug);
+
+        $response = Http::withOptions([
+            'verify' => (bool) ($config['verify_ssl'] ?? false),
+        ])->withHeaders([
             'authkey' => $config['auth_key'],
         ])->get($verifyUrl, [
-            'mobile' => $phone,
+            'mobile' => $mobile,
             'otp' => $otp,
         ]);
+
+        $responseJson = $response->json();
+        $debug['status_code'] = $response->status();
+        $debug['response_body'] = $response->body();
+        $debug['response_json'] = $responseJson;
+        $debug['response_message'] = is_array($responseJson) && isset($responseJson['message']) ? $responseJson['message'] : null;
+        $debug['successful'] = $response->successful();
+
+        Log::info('MSG91 verify OTP response', $debug);
 
         if (!$response->successful()) {
             return [
                 'ok' => false,
                 'message' => 'The OTP is invalid or expired.',
+                'debug' => $debug,
             ];
         }
 
@@ -143,12 +223,14 @@ class AuthController extends Controller
             return [
                 'ok' => false,
                 'message' => $body['message'] ?? 'The OTP is invalid or expired.',
+                'debug' => $debug,
             ];
         }
 
         return [
             'ok' => true,
             'message' => 'OTP verified successfully.',
+            'debug' => $debug,
         ];
     }
 
@@ -160,29 +242,71 @@ class AuthController extends Controller
             return [
                 'ok' => false,
                 'message' => 'SMS gateway is not configured.',
+                'debug' => [
+                    'phone' => $phone,
+                    'auth_key_present' => !empty($config['auth_key']),
+                ],
             ];
         }
 
         $resendUrl = $config['resend_url'] ?? 'https://control.msg91.com/api/v5/otp/retry';
+        $mobile = $this->mobileWithCountryCode($phone, $config);
         $query = http_build_query([
             'authkey' => $config['auth_key'],
             'retrytype' => $config['retry_type'] ?? 'text',
-            'mobile' => $phone,
+            'mobile' => $mobile,
         ]);
 
-        $response = Http::get($resendUrl . '?' . $query);
+        $requestUrl = $resendUrl . '?' . $query;
+        $maskedAuthKey = !empty($config['auth_key']) ? substr($config['auth_key'], 0, 4) . '...' : null;
+        $debug = [
+            'phone' => $phone,
+            'resend_url' => $resendUrl,
+            'request_url' => preg_replace('/authkey=[^&]+/i', 'authkey=***REDACTED***', $requestUrl),
+            'query_params' => [
+                'authkey' => $maskedAuthKey,
+                'retrytype' => $config['retry_type'] ?? 'text',
+                'mobile' => $phone,
+            ],
+            'verify_ssl' => (bool) ($config['verify_ssl'] ?? false),
+        ];
+
+        Log::info('MSG91 resend OTP request', $debug);
+
+        $response = Http::withOptions([
+            'verify' => (bool) ($config['verify_ssl'] ?? false),
+        ])->get($requestUrl);
+
+        $responseJson = $response->json();
+        $debug['status_code'] = $response->status();
+        $debug['response_body'] = $response->body();
+        $debug['response_json'] = $responseJson;
+        $debug['response_message'] = is_array($responseJson) && isset($responseJson['message']) ? $responseJson['message'] : null;
+        $debug['successful'] = $response->successful();
+
+        Log::info('MSG91 resend OTP response', $debug);
 
         if (!$response->successful()) {
             return [
                 'ok' => false,
                 'message' => 'Failed to resend OTP.',
+                'debug' => $debug,
             ];
         }
 
         return [
             'ok' => true,
             'message' => 'OTP resent successfully.',
+            'debug' => $debug,
         ];
+    }
+
+    // MSG91 requires the mobile number prefixed with the country code (e.g. 91XXXXXXXXXX)
+    private function mobileWithCountryCode(string $phone, array $config): string
+    {
+        $country = $config['country'] ?? '91';
+
+        return str_starts_with($phone, $country) ? $phone : $country . $phone;
     }
 
     public function register(Request $request)
