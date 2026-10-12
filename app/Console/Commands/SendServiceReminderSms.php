@@ -24,6 +24,7 @@ class SendServiceReminderSms extends Command
 
         $services = Service::with('customer')
             ->whereNotNull('expiry_date')
+            ->whereDate('expiry_date', '>=', now()->subDays((int) config('services.msg91.reminder_lookback_days', 3)))
             ->whereDate('expiry_date', '<=', now()->addDays(3))
             ->get();
 
@@ -43,7 +44,7 @@ class SendServiceReminderSms extends Command
 
             $result = $smsService->sendFlowSms($customer->phone, $templateId, [
                 'name' => trim(($customer->first_name ?? '') . ' ' . ($customer->last_name ?? '')) ?: $customer->phone,
-                'number' => number_format((float) $service->amount ?? 0, 2, '.', ''),
+                'number' => number_format(0, 2, '.', ''),
                 'date' => optional($service->expiry_date)->format('d-m-Y'),
             ]);
 

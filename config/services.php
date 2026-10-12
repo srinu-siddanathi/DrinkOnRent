@@ -37,6 +37,7 @@ return [
         'template_id' => env('MSG91_TEMPLATE_ID'),
         'flow_url' => env('MSG91_FLOW_URL', 'https://control.msg91.com/api/v5/flow/'),
         'reminder_template_id' => env('MSG91_REMINDER_TEMPLATE_ID'),
+        'reminder_lookback_days' => env('MSG91_REMINDER_LOOKBACK_DAYS', 7),
         'route' => env('MSG91_ROUTE', '4'),
         'country' => env('MSG91_COUNTRY', '91'),
         'retry_type' => env('MSG91_RETRY_TYPE', 'text'),

@@ -8,6 +8,13 @@
     <p class="mt-2 text-2xl text-gray-600">{{ $subtitle }}</p>
 </div>
 
+@if(session('success'))
+    <div class="mb-4 rounded-md bg-green-50 px-4 py-3 text-sm text-green-700">{{ session('success') }}</div>
+@endif
+@if(session('error'))
+    <div class="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{{ session('error') }}</div>
+@endif
+
 <div class="bg-white shadow rounded-lg">
     <div class="px-4 py-5 sm:p-6">
         <div class="mt-1 overflow-x-auto -mx-4 sm:mx-0">

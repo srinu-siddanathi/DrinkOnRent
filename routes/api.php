@@ -35,6 +35,7 @@ Route::group(['middleware' => ['api']], function() {
     Route::post('/send-otp', [App\Http\Controllers\Api\AuthController::class, 'sendOtp']);
     Route::post('/resend-otp', [App\Http\Controllers\Api\AuthController::class, 'resendOtp']);
     Route::post('/verify-otp', [App\Http\Controllers\Api\AuthController::class, 'verifyOtp']);
+    Route::post('/test-reminder-sms', [App\Http\Controllers\Api\ReminderController::class, 'test']);
 
     // Protected routes
     Route::middleware('auth:sanctum')->group(function () {
