@@ -37,6 +37,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('guest:admin')->group(function () {
         Route::get('login', [AdminController::class, 'loginForm'])->name('login');
         Route::post('login', [AdminController::class, 'login'])->name('login.submit');
+        Route::get('forgot-password', [AdminController::class, 'forgotPasswordForm'])->name('password.forgot');
+        Route::post('forgot-password', [AdminController::class, 'sendPasswordResetOtp'])->name('password.otp.send');
+        Route::get('reset-password/verify', [AdminController::class, 'passwordResetVerifyForm'])->name('password.reset.verify');
+        Route::post('reset-password/verify', [AdminController::class, 'resetPassword'])->name('password.reset');
+        Route::post('reset-password/resend', [AdminController::class, 'resendPasswordResetOtp'])->name('password.otp.resend');
     });
 
     // Protected routes
@@ -46,6 +51,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('dashboard/services-soon', [AdminController::class, 'servicesSoon'])->name('dashboard.services-soon');
         Route::get('dashboard/services-delay', [AdminController::class, 'servicesDelay'])->name('dashboard.services-delay');
         Route::post('logout', [AdminController::class, 'logout'])->name('logout');
+        Route::get('password/change', [AdminController::class, 'passwordChangeForm'])->name('password.change');
+        Route::put('password/change', [AdminController::class, 'passwordChange'])->name('password.update');
 
         // Customers
         Route::get('customers/bin', [CustomerController::class, 'bin'])->name('customers.bin');

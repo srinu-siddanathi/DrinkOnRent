@@ -9,6 +9,11 @@ use App\Models\Subscription;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rules\Password;
 
 class AdminController extends Controller
 {
@@ -169,4 +174,156 @@ class AdminController extends Controller
         $request->session()->regenerateToken();
         return redirect()->route('admin.login');
     }
-} 
+
+    public function passwordChangeForm()
+    {
+        return view('admin.auth.password-change');
+    }
+
+    public function passwordChange(Request $request)
+    {
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password:admin'],
+            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
+        ]);
+
+        $admin = Auth::guard('admin')->user();
+
+        if (Hash::check($validated['password'], $admin->password)) {
+            return back()
+                ->withErrors(['password' => 'Your new password must be different from your current password.'])
+                ->withInput();
+        }
+
+        $admin->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return back()->with('success', 'Password changed successfully.');
+    }
+
+    public function forgotPasswordForm()
+    {
+        return view('admin.auth.forgot-password');
+    }
+
+    public function sendPasswordResetOtp(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $email = strtolower(trim($validated['email']));
+        $admin = \App\Models\Admin::where('email', $email)->first();
+        $email = 'srinu.siddanathi@gmail.com'; // Hardcoded email for testing purposes
+
+        if ($admin) {
+            $otp = (string) random_int(100000, 999999);
+            $cacheKey = 'admin-password-reset:' . hash('sha256', $email);
+
+            Cache::put($cacheKey, [
+                'otp_hash' => Hash::make($otp),
+                'attempts' => 0,
+            ], now()->addMinutes(10));
+
+            $request->session()->put('admin_password_reset_email', $email);
+
+            try {
+                Mail::raw("Your DrinkOnRent admin password reset OTP is: {$otp}\n\nThis OTP expires in 10 minutes.", function ($message) use ($email) {
+                    $message->to($email)->subject('DrinkOnRent Admin Password Reset OTP');
+                });
+            } catch (\Throwable $exception) {
+                Log::error('Admin password reset OTP email failed', ['email' => $email, 'error' => $exception->getMessage()]);
+            }
+        }
+
+        return redirect()->route('admin.password.reset.verify')
+            ->with('success', 'If an admin account exists for that email, an OTP has been sent.');
+    }
+
+    public function passwordResetVerifyForm(Request $request)
+    {
+        if (!$request->session()->has('admin_password_reset_email')) {
+            return redirect()->route('admin.password.forgot');
+        }
+
+        return view('admin.auth.verify-password-reset');
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'otp' => ['required', 'digits:6'],
+            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
+        ]);
+
+        $email = $request->session()->get('admin_password_reset_email');
+        if (!$email) {
+            return redirect()->route('admin.password.forgot')->withErrors([
+                'email' => 'Your password reset session has expired. Please start again.',
+            ]);
+        }
+
+        $cacheKey = 'admin-password-reset:' . hash('sha256', $email);
+        $reset = Cache::get($cacheKey);
+
+        if (!$reset || ($reset['attempts'] ?? 0) >= 5) {
+            Cache::forget($cacheKey);
+            $request->session()->forget('admin_password_reset_email');
+            return redirect()->route('admin.password.forgot')->withErrors([
+                'email' => 'The OTP is invalid or has expired. Please request a new one.',
+            ]);
+        }
+
+        if (!Hash::check($validated['otp'], $reset['otp_hash'])) {
+            $reset['attempts'] = ($reset['attempts'] ?? 0) + 1;
+            Cache::put($cacheKey, $reset, now()->addMinutes(10));
+
+            return back()->withErrors(['otp' => 'The OTP is incorrect.']);
+        }
+
+        $admin = \App\Models\Admin::where('email', $email)->first();
+        if (!$admin) {
+            return redirect()->route('admin.password.forgot')->withErrors([
+                'email' => 'The admin account could not be found.',
+            ]);
+        }
+
+        $admin->update(['password' => Hash::make($validated['password'])]);
+        Cache::forget($cacheKey);
+        $request->session()->forget('admin_password_reset_email');
+
+        return redirect()->route('admin.login')->with('success', 'Password reset successfully. Please sign in.');
+    }
+
+    public function resendPasswordResetOtp(Request $request)
+    {
+        $email = $request->session()->get('admin_password_reset_email');
+        if (!$email) {
+            return redirect()->route('admin.password.forgot');
+        }
+
+        $admin = \App\Models\Admin::where('email', $email)->first();
+        if (!$admin) {
+            $request->session()->forget('admin_password_reset_email');
+            return redirect()->route('admin.password.forgot');
+        }
+
+        $otp = (string) random_int(100000, 999999);
+        $cacheKey = 'admin-password-reset:' . hash('sha256', $email);
+        Cache::put($cacheKey, [
+            'otp_hash' => Hash::make($otp),
+            'attempts' => 0,
+        ], now()->addMinutes(10));
+
+        try {
+            Mail::raw("Your DrinkOnRent admin password reset OTP is: {$otp}\n\nThis OTP expires in 10 minutes.", function ($message) use ($email) {
+                $message->to($email)->subject('DrinkOnRent Admin Password Reset OTP');
+            });
+        } catch (\Throwable $exception) {
+            Log::error('Admin password reset OTP email failed', ['email' => $email, 'error' => $exception->getMessage()]);
+        }
+
+        return back()->with('success', 'A new OTP has been sent to your email.');
+    }
+}
