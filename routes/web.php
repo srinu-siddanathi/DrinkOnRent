@@ -53,6 +53,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('logout', [AdminController::class, 'logout'])->name('logout');
         Route::get('password/change', [AdminController::class, 'passwordChangeForm'])->name('password.change');
         Route::put('password/change', [AdminController::class, 'passwordChange'])->name('password.update');
+        Route::get('settings/email-test', [AdminController::class, 'emailTestForm'])->name('settings.email-test');
+        Route::post('settings/email-test', [AdminController::class, 'sendTestEmail'])->name('settings.email-test.send');
 
         // Customers
         Route::get('customers/bin', [CustomerController::class, 'bin'])->name('customers.bin');

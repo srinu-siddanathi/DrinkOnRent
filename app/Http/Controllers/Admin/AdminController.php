@@ -215,7 +215,6 @@ class AdminController extends Controller
 
         $email = strtolower(trim($validated['email']));
         $admin = \App\Models\Admin::where('email', $email)->first();
-        $email = 'srinu.siddanathi@gmail.com'; // Hardcoded email for testing purposes
 
         if ($admin) {
             $otp = (string) random_int(100000, 999999);
@@ -325,5 +324,58 @@ class AdminController extends Controller
         }
 
         return back()->with('success', 'A new OTP has been sent to your email.');
+    }
+
+    public function emailTestForm()
+    {
+        $admin = Auth::guard('admin')->user();
+
+        return view('admin.settings.email-test', [
+            'adminEmail' => $admin?->email,
+            'mailer' => config('mail.default'),
+            'host' => config('mail.mailers.smtp.host'),
+            'port' => config('mail.mailers.smtp.port'),
+            'scheme' => config('mail.mailers.smtp.scheme'),
+            'fromAddress' => config('mail.from.address'),
+            'fromName' => config('mail.from.name'),
+        ]);
+    }
+
+    public function sendTestEmail(Request $request)
+    {
+        $validated = $request->validate(['email' => ['required', 'email']]);
+        $recipient = strtolower(trim($validated['email']));
+        $startedAt = microtime(true);
+
+        try {
+            Mail::raw(
+                'This is a test email from the DrinkOnRent admin panel. If you received this message, Laravel SMTP delivery is working.',
+                function ($message) use ($recipient) {
+                    $message->to($recipient)->subject('DrinkOnRent SMTP Test');
+                }
+            );
+
+            $duration = round((microtime(true) - $startedAt) * 1000);
+            Log::info('Admin SMTP test email sent', [
+                'recipient' => $recipient,
+                'mailer' => config('mail.default'),
+                'duration_ms' => $duration,
+            ]);
+
+            return back()->with('success', "Test email accepted by the mail transport and sent to {$recipient}. Check spam/junk if it does not arrive.");
+        } catch (\Throwable $exception) {
+            Log::error('Admin SMTP test email failed', [
+                'recipient' => $recipient,
+                'mailer' => config('mail.default'),
+                'host' => config('mail.mailers.smtp.host'),
+                'port' => config('mail.mailers.smtp.port'),
+                'error' => $exception->getMessage(),
+                'exception' => $exception::class,
+            ]);
+
+            return back()->withInput()->withErrors([
+                'email' => 'Email delivery failed: ' . $exception->getMessage(),
+            ]);
+        }
     }
 }
